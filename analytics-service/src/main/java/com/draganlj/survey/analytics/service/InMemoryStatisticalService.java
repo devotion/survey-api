@@ -19,13 +19,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class InMemoryStatisticalService implements StatisticsService {
 
-    @Autowired
     private ResultCaptureServiceClient captureServiceClient;
 
-    @Autowired
     private AuthoringServiceClient authoringServiceClient;
 
     @Override
+    // fixme: clients not injected, fix this once we move to events
     public QuestionStatistics getQuestionStatistics(String surveyId, Integer questionId) {
         log.debug("Invoke question statistic surveyid={}, questionid={}", surveyId, questionId);
         Question questionWithAnswers = authoringServiceClient.getQuestionWithAnswers(surveyId, questionId);
