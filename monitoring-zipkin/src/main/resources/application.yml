@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: monitoring-zipkin
-  rabbitmq:
-    host: rabbitmq
-
-logging:
-  level:
-    org.springframework.cloud.sleuth: ERROR

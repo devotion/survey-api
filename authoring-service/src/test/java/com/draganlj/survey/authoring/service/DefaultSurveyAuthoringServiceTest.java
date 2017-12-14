@@ -16,6 +16,7 @@ import org.modelmapper.ModelMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -41,11 +42,11 @@ public class DefaultSurveyAuthoringServiceTest {
     public void setup() {
         initMocks(this);
         service = new DefaultSurveyAuthoringService(surveyRepository, answerRepository, modelMapper);
-        when(surveyRepository.findOne(SURVEY_ID_0_PUBLISHED)).thenReturn(Survey.builder().published(Boolean.TRUE).build());
-        when(surveyRepository.findOne(SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS)).thenReturn(Survey.builder().published(Boolean.FALSE).questions(getQuestions(4)).build());
-        when(surveyRepository.findOne(SURVEY_ID_2_NON_EXISTING)).thenReturn(null);
-        when(surveyRepository.findOne(SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION)).thenReturn(Survey.builder().published(Boolean.FALSE).questions(getQuestions(1)).build());
-        when(surveyRepository.findOne(SURVEY_ID_4_NON_PUBLISHED_WITH_NO_QUESTIONS)).thenReturn(Survey.builder().published(Boolean.FALSE).questions(null).build());
+        when(surveyRepository.findById(SURVEY_ID_0_PUBLISHED)).thenReturn(Optional.of(Survey.builder().published(Boolean.TRUE).build()));
+        when(surveyRepository.findById(SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS)).thenReturn(Optional.of(Survey.builder().published(Boolean.FALSE).questions(getQuestions(4)).build()));
+        when(surveyRepository.findById(SURVEY_ID_2_NON_EXISTING)).thenReturn(Optional.empty());
+        when(surveyRepository.findById(SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION)).thenReturn(Optional.of(Survey.builder().published(Boolean.FALSE).questions(getQuestions(1)).build()));
+        when(surveyRepository.findById(SURVEY_ID_4_NON_PUBLISHED_WITH_NO_QUESTIONS)).thenReturn(Optional.of(Survey.builder().published(Boolean.FALSE).questions(null).build()));
         when(answerRepository.findBySurveyIdAndQuestionId(SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS, 0)).thenReturn(getAnswers(3, 0, SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS));
     }
 
@@ -93,7 +94,7 @@ public class DefaultSurveyAuthoringServiceTest {
     public void shouldDeleteQuestion() {
         List<Question> questions = getQuestions(3);
         Survey survey = Survey.builder().id("5").questions(questions).published(Boolean.FALSE).build();
-        when(surveyRepository.findOne("5")).thenReturn(survey);
+        when(surveyRepository.findById("5")).thenReturn(Optional.of(survey));
         service.deleteQuestion("5", 2);
         Assert.assertEquals(2, questions.size());
     }

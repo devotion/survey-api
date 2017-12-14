@@ -1,15 +1,5 @@
 version: '3.3'
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    restart: always
-    ports:
-      - 15672:15672
-    logging:
-      options:
-        max-size: "10m"
-        max-file: "10"
-
   ## DB instances ##
   authoring-db:
     build: authoring-db
@@ -29,62 +19,6 @@ services:
     ports:
       - 27019:27017
 
-  ## Infrastructure services  ##
-  registry-service:
-    build:
-     context: registry-service
-     args:
-       - java_opts=-Xmx256M
-    restart: always
-    ports:
-      - 8761:8761
-    logging:
-      options:
-        max-size: "10m"
-        max-file: "10"
-
-  gateway-service:
-    build:
-     context: gateway-service
-     args:
-       - java_opts=-Xmx256M
-    restart: always
-    depends_on:
-      - registry-service
-    ports:
-      - 80:4000
-    logging:
-      options:
-        max-size: "10m"
-        max-file: "10"
-
-  monitoring-hystrix:
-    build:
-     context: monitoring-hystrix
-     args:
-       - java_opts=-Xmx256M
-    restart: always
-    ports:
-      - 9090:8080
-      - 8989:8989
-    logging:
-      options:
-        max-size: "10m"
-        max-file: "10"
-
-  monitoring-zipkin:
-    build:
-     context: monitoring-zipkin
-     args:
-       - java_opts=-Xmx256M
-    restart: always
-    ports:
-      - 8888:8080
-    logging:
-      options:
-        max-size: "10m"
-        max-file: "10"
-
   ## Application services ##
   authoring-service:
     build:
@@ -99,6 +33,7 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+
   resultcapture-service:
     build:
      context: resultcapture-service
