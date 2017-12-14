@@ -1,4 +1,4 @@
-FROM java:8-jre
+FROM openjdk:9.0.1-11-jre
 MAINTAINER Dragan Ljubojevic <dragan.ljubojevic@gmail.com>
 ADD ./target/resultcapture-service.jar /app/
 ARG java_opts

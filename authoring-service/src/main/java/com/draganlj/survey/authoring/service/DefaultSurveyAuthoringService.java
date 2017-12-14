@@ -8,16 +8,17 @@ import com.draganlj.survey.authoring.model.Survey;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -43,8 +44,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
 
     @Override
     public Question addQuestion(@NotEmpty String surveyId, @Valid QuestionText question) {
-        Survey survey = surveyRepository.findOne(surveyId);
-        validate(survey);
+        Survey survey = validate(surveyRepository.findById(surveyId));
         List<Question> questions = survey.getQuestions();
         Question newQuestion = modelMapper.map(question, Question.class);
         newQuestion.setId(questions.size());
@@ -55,8 +55,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
 
     @Override
     public void updateQuestion(@NotEmpty String surveyId, @NotNull Integer questionId, @Valid QuestionText question) {
-        Survey survey = surveyRepository.findOne(surveyId);
-        validate(survey, questionId);
+        Survey survey = validate(surveyRepository.findById(surveyId), questionId);
         survey.getQuestions().set(questionId, modelMapper.map(question, Question.class));
         surveyRepository.save(survey);
     }
@@ -73,8 +72,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
     @Override
     public QuestionAll getQuestion(@NotEmpty String surveyId, @NotNull Integer questionId, boolean fetchAnswers) {
         log.debug("Invoke get question surveyid={}, questionid={}", surveyId, questionId);
-        Survey survey = surveyRepository.findOne(surveyId);
-        validate(survey, questionId);
+        Survey survey = validate(surveyRepository.findById(surveyId), questionId);
         List<Question> questions = survey.getQuestions();
         Question question = questions.get(questionId);
         QuestionAll questionDto = modelMapper.map(question, QuestionAll.class);
@@ -89,8 +87,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
 
     @Override
     public List<QuestionIdAndText> getAllQuestions(@NotEmpty String surveyId) {
-        Survey survey = surveyRepository.findOne(surveyId);
-        validate(survey);
+        Survey survey = validate(surveyRepository.findById(surveyId));
         List<Question> questions = survey.getQuestions();
         if (questions != null) {
             return modelMapper.map(questions, questionDtoListType);
@@ -100,8 +97,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
 
     @Override
     public List<AnswerIdAndText> getAllAnswers(@NotEmpty String surveyId, @NotNull Integer questionId) {
-        Survey survey = surveyRepository.findOne(surveyId);
-        validate(survey, questionId);
+        validate(surveyRepository.findById(surveyId), questionId);
         List<Answer> answers = answerRepository.findBySurveyIdAndQuestionId(surveyId, questionId);
         if (answers != null) {
             return modelMapper.map(answers, answersDtoListType);
@@ -111,12 +107,12 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
 
     @Override
     public void deleteAnswer(@NotEmpty String answerId) {
-        answerRepository.delete(answerId);
+        answerRepository.deleteById(answerId);
     }
 
     @Override
     public void updateAnswer(@NotEmpty String answerId, @Valid AnswerText answer) {
-        Answer existingOne = answerRepository.findOne(answerId);
+        Answer existingOne = answerRepository.findById(answerId).get();
         if (existingOne != null) {
             existingOne.setAnswerText(answer.getAnswerText());
             answerRepository.save(existingOne);
@@ -125,8 +121,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
 
     @Override
     public Answer addAnswer(@NotEmpty String surveyId, @NotNull Integer questionId, @Valid AnswerText answer) {
-        Survey survey = surveyRepository.findOne(surveyId);
-        validate(survey, questionId);
+        validate(surveyRepository.findById(surveyId), questionId);
         Answer newAnswer = modelMapper.map(answer, Answer.class);
         newAnswer.setSurveyId(surveyId);
         newAnswer.setQuestionId(questionId);
@@ -134,17 +129,21 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
     }
 
     // todo: implement better and more flexible/reusable validation by using spring custom validators
-    private static void validate(Survey survey) {
-        if (survey == null) {
-            throw new ValidationException(String.format("Survey [%s] could not be found", survey));
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static Survey validate(Optional<Survey> input) {
+        if (!input.isPresent()) {
+            throw new ValidationException(String.format("Survey [%s] could not be found", input));
         }
-        if (survey.getPublished()) {
-            throw new ValidationException(String.format("Survey [%s] is already published", survey));
+        Survey result = input.get();
+        if (result.getPublished()) {
+            throw new ValidationException(String.format("Survey [%s] is already published", input));
         }
+        return result;
     }
 
-    private static void validate(Survey survey, Integer questionId) {
-        validate(survey);
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static Survey validate(Optional<Survey> input, Integer questionId) {
+        Survey survey = validate(input);
         List<Question> questions = survey.getQuestions();
         if (questions == null) {
             throw new ValidationException(String.format("Survey [%s] has no questions", survey));
@@ -152,6 +151,7 @@ public class DefaultSurveyAuthoringService implements SurveyAuthoringService {
         if (questions.size() < questionId) {
             throw new ValidationException(String.format("Survey [%s] has no question with id {%s}", survey, questionId));
         }
+        return survey;
     }
 
 

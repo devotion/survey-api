@@ -10,13 +10,9 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>gateway-service</module>
-        <module>registry-service</module>
         <module>authoring-service</module>
         <module>resultcapture-service</module>
         <module>analytics-service</module>
-        <module>monitoring-zipkin</module>
-        <module>monitoring-hystrix</module>
     </modules>
 
 </project>
