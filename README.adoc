@@ -1,4 +1,4 @@
-image::https://travis-ci.org/ljufa/survey-api.svg?branch=master[link=https://travis-ci.org/ljufa/survey-api]
+image::https://travis-ci.org/devotion/survey-api.svg?branch=to-stream-architecture[link=https://travis-ci.org/devotion/survey-api]
 image::https://codecov.io/gh/ljufa/survey-api/branch/master/graph/badge.svg[https://codecov.io/gh/ljufa/survey-api]
 
 = Requirements
