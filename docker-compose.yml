@@ -27,7 +27,6 @@ services:
        - java_opts=-Xmx256M
     restart: always
     depends_on:
-      - registry-service
       - authoring-db
     logging:
       options:
@@ -41,7 +40,6 @@ services:
        - java_opts=-Xmx256M
     restart: always
     depends_on:
-      - registry-service
       - capture-db
     logging:
       options:
@@ -55,7 +53,6 @@ services:
       - java_opts=-Xmx256M
     restart: always
     depends_on:
-      - registry-service
       - authoring-service
       - resultcapture-service
     logging:
