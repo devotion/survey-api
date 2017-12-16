@@ -55,9 +55,9 @@ services:
      context: resultcapture-service
      args:
        - java_opts=-Xmx256M
-    restart: always
     depends_on:
       - capture-db
+      - kafka
     logging:
       options:
         max-size: "10m"
