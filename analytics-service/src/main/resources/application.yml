@@ -26,7 +26,8 @@ hystrix:
             timeoutInMilliseconds: 10000
 
 server:
-  context-path: /analytics/
+  servlet:
+    context-path: /analytics/
   port: 7676
 
 logging:
