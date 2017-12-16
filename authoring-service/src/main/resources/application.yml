@@ -30,7 +30,8 @@ hystrix:
             timeoutInMilliseconds: 10000
 
 server:
-  context-path: /authoring/
+  servlet:
+    context-path: /authoring/
   port: 7878
 logging:
   level:

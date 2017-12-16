@@ -17,7 +17,8 @@ kafka:
 
 
 server:
-  context-path: /capture/
+  servlet:
+    context-path: /capture/
   port: 7979
 
 logging:

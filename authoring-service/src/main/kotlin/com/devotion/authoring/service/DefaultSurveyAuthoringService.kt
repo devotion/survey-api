@@ -17,8 +17,8 @@ import javax.validation.constraints.NotNull
 
 @Service
 class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: SurveyRepository,
-                                    @Autowired val answerRepository: AnswerRepository,
-                                    @Autowired val modelMapper: ModelMapper) : SurveyAuthoringService {
+                                    @Autowired private val answerRepository: AnswerRepository,
+                                    @Autowired private val modelMapper: ModelMapper) : SurveyAuthoringService {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val questionDtoListType = object : TypeToken<List<QuestionIdAndText>>() {}.type
     private val answersDtoListType = object : TypeToken<List<AnswerIdAndText>>() {}.type
@@ -102,7 +102,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
 
     private fun validate(input: Optional<Survey>, questionId: Int): Survey {
         val survey = validate(input)
-        val questions = survey.questions ?: throw ValidationException(String.format("Survey [%s] has no questions", survey))
+        val questions = survey.questions
         if (questions.size < questionId) {
             throw ValidationException(String.format("Survey [%s] has no question with id {%s}", survey, questionId))
         }
