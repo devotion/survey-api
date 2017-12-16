@@ -30,7 +30,8 @@ hystrix:
             timeoutInMilliseconds: 10000
 
 server:
-  context-path: /capture/
+  servlet:
+    context-path: /capture/
   port: 7979
 
 logging:
