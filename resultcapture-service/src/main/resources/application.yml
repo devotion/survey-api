@@ -8,26 +8,9 @@ spring:
       password: password
       database: results
       port: 27017
-  rabbitmq:
-    host: rabbitmq
-  sleuth:
-    sampler:
-      percentage: 1
+1kafka:
+  servers: kafka:9092
 
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    serviceUrl:
-      defaultZone: http://registry-service:8761/eureka/
-
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          thread:
-            timeoutInMilliseconds: 10000
 
 server:
   context-path: /capture/
@@ -36,6 +19,7 @@ server:
 logging:
   level:
     com.draganlj.survey: DEBUG
+
 
 api:
   version: 1.0
