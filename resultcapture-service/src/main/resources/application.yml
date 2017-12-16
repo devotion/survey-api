@@ -8,8 +8,12 @@ spring:
       password: password
       database: results
       port: 27017
-1kafka:
-  servers: kafka:9092
+kafka:
+  bootstrap-servers: kafka:9092
+  consumer-group: resultCaptureGroup
+  result-captured-topic: result-captured
+  result-stored-topic: result-stored
+
 
 
 server:

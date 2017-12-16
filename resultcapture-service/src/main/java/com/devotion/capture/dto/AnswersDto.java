@@ -1,4 +1,4 @@
-package com.draganlj.survey.capture.dto;
+package com.devotion.capture.dto;
 
 import lombok.Data;
 import javax.validation.constraints.NotEmpty;

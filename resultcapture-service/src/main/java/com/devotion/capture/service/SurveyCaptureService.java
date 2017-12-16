@@ -1,8 +1,8 @@
-package com.draganlj.survey.capture.service;
+package com.devotion.capture.service;
 
-import com.draganlj.survey.capture.dto.QuestionAnswerDto;
-import com.draganlj.survey.capture.model.QuestionAnswer;
-import com.draganlj.survey.capture.model.User;
+import com.devotion.capture.dto.QuestionAnswerDto;
+import com.devotion.capture.model.QuestionAnswer;
+import com.devotion.capture.model.User;
 
 import java.util.List;
 

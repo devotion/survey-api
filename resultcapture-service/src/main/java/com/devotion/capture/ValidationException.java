@@ -1,4 +1,4 @@
-package com.draganlj.survey.capture;
+package com.devotion.capture;
 
 public class ValidationException extends RuntimeException {
     private static final long serialVersionUID = -3685317928211708951L;

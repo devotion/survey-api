@@ -1,8 +1,8 @@
-package com.draganlj.survey.capture.service;
+package com.devotion.capture.service;
 
-import com.draganlj.survey.capture.model.AnonumousUser;
-import com.draganlj.survey.capture.model.RegistredUser;
-import com.draganlj.survey.capture.model.User;
+import com.devotion.capture.model.AnonumousUser;
+import com.devotion.capture.model.RegistredUser;
+import com.devotion.capture.model.User;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;

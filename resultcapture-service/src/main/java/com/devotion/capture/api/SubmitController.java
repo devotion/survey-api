@@ -1,8 +1,8 @@
-package com.draganlj.survey.capture.api;
+package com.devotion.capture.api;
 
-import com.draganlj.survey.capture.dto.AnswersDto;
-import com.draganlj.survey.capture.service.SurveyCaptureService;
-import com.draganlj.survey.capture.service.UserService;
+import com.devotion.capture.service.SurveyCaptureService;
+import com.devotion.capture.service.UserService;
+import com.devotion.capture.dto.AnswersDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;

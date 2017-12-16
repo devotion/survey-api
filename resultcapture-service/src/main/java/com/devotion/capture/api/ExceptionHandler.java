@@ -1,6 +1,6 @@
-package com.draganlj.survey.capture.api;
+package com.devotion.capture.api;
 
-import com.draganlj.survey.capture.ValidationException;
+import com.devotion.capture.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;

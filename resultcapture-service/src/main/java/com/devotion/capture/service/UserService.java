@@ -1,6 +1,6 @@
-package com.draganlj.survey.capture.service;
+package com.devotion.capture.service;
 
-import com.draganlj.survey.capture.model.User;
+import com.devotion.capture.model.User;
 
 import javax.servlet.http.HttpServletRequest;
 

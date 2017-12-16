@@ -1,4 +1,4 @@
-package com.draganlj.survey.capture.model;
+package com.devotion.capture.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

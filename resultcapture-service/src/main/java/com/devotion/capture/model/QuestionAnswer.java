@@ -1,10 +1,9 @@
-package com.draganlj.survey.capture.model;
+package com.devotion.capture.model;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document(collection = "questionanswers")
 public class QuestionAnswer {
 
     private String surveyResultId;
