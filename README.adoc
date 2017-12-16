@@ -1,5 +1,5 @@
 image::https://travis-ci.org/devotion/survey-api.svg?branch=to-stream-architecture[link=https://travis-ci.org/devotion/survey-api]
-image::https://codecov.io/gh/ljufa/survey-api/branch/master/graph/badge.svg[https://codecov.io/gh/ljufa/survey-api]
+image::https://codecov.io/gh/devotion/survey-api/branch/master/graph/badge.svg[https://codecov.io/gh/devotion/survey-api]
 
 = Requirements
 Using microservice architecture make api for online survey application like SurveyMonkey.
@@ -44,29 +44,16 @@ Features in this module:
 
 From all above I can make assumption that each module will have different scaling needs 
 so decided to design them as separate services.
- 
-In addition to mentioned services two more technical services are going to be used:
 
-* GATEWAY-SERVICE: for dynamic request routing, security, monitoring...
-* REGISTRY-SERVICE: for service discovery
- 
 
 == 2. Data persistence
-Each service will have its own mongodb instance.
-Exception from this is first iteration of ANALYTICS-SERVICE which is going to pull data from other two services on request.
-In future iterations I can implement it in more robust and scalable way to be able to support big and fast data analytics 
-in realtime (Spark, Kafka ...???) ... 
+TBD
 
 == 3. Data exchange & Client-service and service-service communication
-JSON data format over http rest endpoints is going to be used for communication between client and server,
- as well as for inter-service communication.
-Use synchronous service communication because of better cloud tools support at the moment
-(spring streams cloud or spring 5 reactive is still immature)
+TBD
 
 == 4. Scaling, Service discovery, load balancing and circuit breakers
-Use Netflix Eureka for service discovery and Ribbon for client side load balancing and Zuul for request routing.
-For auto scaling, self healing I'll relay on cloud provider platform such is Kubernetes.
-Hystrix is responsible for circuit breaker functionality.
+TBD
 
 == 5. API versioning
 To be able to support smooth API api evolution versioning is going to be in place from the start.
@@ -108,13 +95,7 @@ Once you run application you can http://localhost/swagger-ui.html[go to swagger 
 for more details
 
 = Logging & Monitoring
-For distrubuted log tracing we will enable spring sleuth to collect span id and send it to the zipkin server over rabittmq.
-
-  * Hystrix dashboard is available at http://localhost:9090/hystrix/monitor?stream=http%3A%2F%2Flocalhost%3A8989[http://localhost:9090/hystrix]
-  * Zipkin log analyzer UI iz available at http://localhost:8888/[http://localhost:8888]
-  * Rabbit MQ UI at http://localhost:15672 (guest/guest)
-  * Eureka registry UI is here http://localhost:8761/
+TBD
 
 = Testing
-
 TBD
