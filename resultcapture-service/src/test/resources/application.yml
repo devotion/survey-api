@@ -1,0 +1,6 @@
+logging:
+  level:
+    com.devotion.survey: DEBUG
+
+api:
+  version: 1.0
