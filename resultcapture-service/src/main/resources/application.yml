@@ -14,8 +14,6 @@ kafka:
   result-captured-topic: result-captured
   result-stored-topic: result-stored
 server:
-  servlet:
-    context-path: /capture/
   port: 7979
 logging:
   level:

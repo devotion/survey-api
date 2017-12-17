@@ -1,5 +1,14 @@
 version: '3.3'
 services:
+  http-proxy:
+    image: traefik
+    container_name: traefik
+    volumes:
+      - ./http-proxy/traefik.toml:/etc/traefik/traefik.toml
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 80:80
+      - 8080:8080
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -49,6 +58,9 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=7979"
 
   resultcapture-service:
     build:
@@ -60,8 +72,11 @@ services:
       - kafka
     logging:
       options:
-        max-size: "10m"
-        max-file: "10"
+       max-size: "10m"
+       max-file: "10"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=7979"
 
   analytics-service:
     build:
@@ -74,3 +89,6 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=7979"

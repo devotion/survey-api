@@ -1,34 +1,9 @@
 spring:
   application:
     name: analytics-service
-  rabbitmq:
-    host: rabbitmq
-  sleuth:
-    sampler:
-      percentage: 1
-
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    serviceUrl:
-      defaultZone: http://registry-service:8761/eureka/
-#feign:
-#  hystrix:
-#    enabled: false
-
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          thread:
-            timeoutInMilliseconds: 10000
 
 server:
-  servlet:
-    context-path: /analytics/
-  port: 7676
+  port: 7979
 
 logging:
   level:
