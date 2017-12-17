@@ -1,5 +1,22 @@
 version: '3.3'
 services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
   ## DB instances ##
   authoring-db:
     build: authoring-db
@@ -25,9 +42,9 @@ services:
      context: authoring-service
      args:
        - java_opts=-Xmx256M
-    restart: always
     depends_on:
       - authoring-db
+      - kafka
     logging:
       options:
         max-size: "10m"
@@ -38,9 +55,9 @@ services:
      context: resultcapture-service
      args:
        - java_opts=-Xmx256M
-    restart: always
     depends_on:
       - capture-db
+      - kafka
     logging:
       options:
         max-size: "10m"
@@ -51,10 +68,8 @@ services:
      context: analytics-service
      args:
       - java_opts=-Xmx256M
-    restart: always
     depends_on:
-      - authoring-service
-      - resultcapture-service
+      - kafka
     logging:
       options:
         max-size: "10m"

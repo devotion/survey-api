@@ -6,7 +6,6 @@ import com.draganlj.survey.analytics.api.dto.QuestionStatistics;
 import com.draganlj.survey.analytics.client.AuthoringServiceClient;
 import com.draganlj.survey.analytics.client.ResultCaptureServiceClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -30,14 +29,13 @@ public class InMemoryStatisticalService implements StatisticsService {
         Question questionWithAnswers = authoringServiceClient.getQuestionWithAnswers(surveyId, questionId);
         List<QuestionAnswer> answersOnQuestion = captureServiceClient.getAnswersOnQuestion(surveyId, questionId);
         Map<String, Long> distributionMap = answersOnQuestion.stream()
-                .map(e -> e.getAnswerIds())
-                .flatMap(ans -> Arrays.stream(ans))
+                .map(QuestionAnswer::getAnswerIds)
+                .flatMap(Arrays::stream)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-        QuestionStatistics stat = QuestionStatistics.builder()
+        return QuestionStatistics.builder()
                 .answerDistribution(distributionMap)
                 .numberOfAnswers(distributionMap.values().stream().mapToLong(Long::longValue).sum())
                 .question(questionWithAnswers).build();
-        return stat;
     }
 }
