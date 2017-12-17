@@ -8,27 +8,6 @@ spring:
       password: password
       database: survey
       port: 27017
-  rabbitmq:
-    host: rabbitmq
-  sleuth:
-    sampler:
-      percentage: 1
-
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    serviceUrl:
-      defaultZone: http://registry-service:8761/eureka/
-
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          thread:
-            timeoutInMilliseconds: 10000
-
 server:
   servlet:
     context-path: /authoring/

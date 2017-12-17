@@ -42,9 +42,9 @@ services:
      context: authoring-service
      args:
        - java_opts=-Xmx256M
-    restart: always
     depends_on:
       - authoring-db
+      - kafka
     logging:
       options:
         max-size: "10m"
@@ -68,10 +68,8 @@ services:
      context: analytics-service
      args:
       - java_opts=-Xmx256M
-    restart: always
     depends_on:
-      - authoring-service
-      - resultcapture-service
+      - kafka
     logging:
       options:
         max-size: "10m"

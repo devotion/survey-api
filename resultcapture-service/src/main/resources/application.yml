@@ -13,18 +13,12 @@ kafka:
   consumer-group: resultCaptureGroup
   result-captured-topic: result-captured
   result-stored-topic: result-stored
-
-
-
 server:
   servlet:
     context-path: /capture/
   port: 7979
-
 logging:
   level:
     com.draganlj.survey: DEBUG
-
-
 api:
   version: 1.0
