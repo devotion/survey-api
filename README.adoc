@@ -70,7 +70,7 @@ Versioning method of choice is use of Accept header in each request `Accept=appl
 
 ==== Build:
 
-* `git clone https://github.com/ljufa/survey-api.git`
+* `git clone https://github.com/devotion/survey-api.git`
 * `cd survey`
 * `./mvnw clean package`
  
