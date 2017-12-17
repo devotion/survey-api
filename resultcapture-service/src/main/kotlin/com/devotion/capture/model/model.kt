@@ -6,11 +6,11 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
 @NoArgConstructor
-open class AnonimousUser(val uniqueId: String)
+open class AnonymousUser(val uniqueId: String)
 
 @Document(collection = "surveyresults")
 @NoArgConstructor
-class SurveyResult(@Id val id: String? = null, val surveyId: String, val user: AnonimousUser, val submitDate: LocalDateTime, val answers: List<QuestionAnswer>)
+class SurveyResult(@Id val id: String? = null, val surveyId: String, val user: AnonymousUser, val submitDate: LocalDateTime, val answers: List<QuestionAnswer>)
 
 @NoArgConstructor
 class QuestionAnswer(var surveyResultId: String, var surveyId: String, var questionId: Int, var answerIds: Array<String>)

@@ -3,7 +3,7 @@ package com.devotion.capture.service
 import com.devotion.capture.KafkaConfig
 import com.devotion.capture.dto.QuestionAnswerDto
 import com.devotion.capture.event.CaptureResultCreatedEvent
-import com.devotion.capture.model.AnonimousUser
+import com.devotion.capture.model.AnonymousUser
 import com.devotion.capture.model.QuestionAnswer
 import com.devotion.capture.model.SurveyResult
 import org.modelmapper.ModelMapper
@@ -32,11 +32,11 @@ class DefaultSurveyCaptureService(@Autowired private val kafkaConfig: KafkaConfi
     private val questionAnswerModelType = object : TypeToken<List<QuestionAnswer>>() {}.type
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    override fun submitWholeSurvey(user: AnonimousUser, @NotEmpty surveyAnswers: List<QuestionAnswerDto>, @NotEmpty surveyId: String) {
+    override fun submitWholeSurvey(user: AnonymousUser, @NotEmpty surveyAnswers: List<QuestionAnswerDto>, @NotEmpty surveyId: String) {
         sendTo(kafkaConfig.resultCapturedTopic, CaptureResultCreatedEvent(user, surveyId, surveyAnswers))
     }
 
-    @KafkaListener(topics = arrayOf("result-captured"), containerFactory = "jsonKafkaListenerContainerFactory")
+    @KafkaListener(topics = ["result-captured"], containerFactory = "jsonKafkaListenerContainerFactory")
     fun storeResult(captureEvent: CaptureResultCreatedEvent) {
 
         // 1. convert from dto

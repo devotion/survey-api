@@ -24,7 +24,7 @@ class ResultsController {
 
     @GetMapping("/{questionId}")
     @ApiOperation("Get all responses on single question.")
-    fun getAnswersOnQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int?): List<QuestionAnswer> {
+    fun getAnswersOnQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int): List<QuestionAnswer> {
         return captureService.getAnswersOnQuestion(surveyId, questionId)
 
     }

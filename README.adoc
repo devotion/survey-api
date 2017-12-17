@@ -97,7 +97,7 @@ Please note that due to service discovery it could take up to 3 heartbeat cycles
 * analytics: http://analytics-service.surveyapi.docker.localhost/swagger-ui.html
 
 = Logging & Monitoring
-Treafik Dashboard: http://localhost:8080
+Traefik Dashboard: http://localhost:8080
 
 TBD
 
