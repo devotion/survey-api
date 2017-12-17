@@ -14,13 +14,11 @@ import org.springframework.kafka.core.*
 import org.springframework.kafka.support.converter.StringJsonMessageConverter
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.RequestHandlerSelectors
-import springfox.documentation.service.ApiInfo
 import springfox.documentation.service.Contact
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
-
-import java.util.HashMap
+import java.util.*
 
 
 @SpringBootApplication
@@ -33,22 +31,18 @@ open class SurveyCaptureApplication {
     @Value("\${kafka.consumer-group}")
     private lateinit var consumerGroupName: String
 
-
     @Value("\${api.version}")
     private lateinit var apiVersion: String
 
     @Bean
-    open fun modelMapper(): ModelMapper {
-        return ModelMapper()
-    }
+    open fun modelMapper() = ModelMapper()
 
     @Bean
-    open fun api(): Docket {
-        return Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.devotion"))
-                .build().apiInfo(metadata())
-    }
+    open fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
+            .select()
+            .apis(RequestHandlerSelectors.basePackage("com.devotion"))
+            .build()
+            .apiInfo(apiInfo())
 
     @Bean
     open fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
@@ -66,34 +60,30 @@ open class SurveyCaptureApplication {
     }
 
     @Bean
-    open fun consumerFactory(): ConsumerFactory<String, String> {
-        return DefaultKafkaConsumerFactory(consumerProperties())
+    open fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
+
+    @Bean
+    open fun consumerProperties() = HashMap<String, Any>().apply {
+        put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
+        put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupName)
+        put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false)
+        put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 15000)
+        put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
+        put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
     }
 
     @Bean
-    open fun consumerProperties(): Map<String, Any> {
-        val props = HashMap<String, Any>()
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupName)
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false)
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 15000)
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
-        return props
-    }
-
-    @Bean
-    open fun producerFactory(): ProducerFactory<String, String> {
-        val props = HashMap<String, Any>()
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
-        props.put(ProducerConfig.RETRIES_CONFIG, 0)
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 1)
-        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432)
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-        return DefaultKafkaProducerFactory(props)
-    }
+    open fun producerFactory() = DefaultKafkaProducerFactory<String, String>(
+            HashMap<String, Any>().apply {
+                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
+                put(ProducerConfig.RETRIES_CONFIG, 0)
+                put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
+                put(ProducerConfig.LINGER_MS_CONFIG, 1)
+                put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432)
+                put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
+                put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
+            }
+    )
 
     @Bean
     open fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
@@ -102,15 +92,12 @@ open class SurveyCaptureApplication {
         return factory
     }
 
-
-    private fun metadata(): ApiInfo {
-        return ApiInfoBuilder()
-                .title("Survey submission API")
-                .description("Operations on this API allows you to capture results of survey submission.")
-                .contact(Contact("Dragan Ljubojevic", "", "dragan.ljubojevic@gmail.com"))
-                .version(apiVersion)
-                .build()
-    }
+    private fun apiInfo() = ApiInfoBuilder()
+            .title("Survey submission API")
+            .description("Operations on this API allows you to capture results of survey submission.")
+            .contact(Contact("Dragan Ljubojevic", "", "dragan.ljubojevic@gmail.com"))
+            .version(apiVersion)
+            .build()
 
     companion object {
         @JvmStatic
@@ -118,5 +105,4 @@ open class SurveyCaptureApplication {
             SpringApplication.run(SurveyCaptureApplication::class.java, *args)
         }
     }
-
 }
