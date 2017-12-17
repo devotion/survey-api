@@ -27,7 +27,7 @@ import java.util.*
 
 @SpringBootApplication
 @EnableSwagger2
-open class SurveyCaptureApplication {
+class SurveyCaptureApplication {
 
 
     @Autowired
@@ -37,24 +37,24 @@ open class SurveyCaptureApplication {
     private lateinit var kafkaConfig: KafkaConfig
 
     @Bean
-    open fun modelMapper() = ModelMapper()
+    fun modelMapper() = ModelMapper()
 
     @Bean
-    open fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
+    fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
             .select()
             .apis(RequestHandlerSelectors.basePackage("com.devotion"))
             .build()
             .apiInfo(apiInfo())
 
     @Bean
-    open fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
+    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
         val kafkaTemplate = KafkaTemplate(producerFactory)
         kafkaTemplate.setMessageConverter(StringJsonMessageConverter())
         return kafkaTemplate
     }
 
     @Bean
-    open fun jsonKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
+    fun jsonKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = consumerFactory()
         factory.setMessageConverter(StringJsonMessageConverter())
@@ -62,10 +62,10 @@ open class SurveyCaptureApplication {
     }
 
     @Bean
-    open fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
+    fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
 
     @Bean
-    open fun consumerProperties() = HashMap<String, Any>().apply {
+    fun consumerProperties() = HashMap<String, Any>().apply {
         put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.bootstrapAddress)
         put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConfig.consumerGroupName)
         put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false)
@@ -75,7 +75,7 @@ open class SurveyCaptureApplication {
     }
 
     @Bean
-    open fun producerFactory() = DefaultKafkaProducerFactory<String, String>(
+    fun producerFactory() = DefaultKafkaProducerFactory<String, String>(
             HashMap<String, Any>().apply {
                 put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.bootstrapAddress)
                 put(ProducerConfig.RETRIES_CONFIG, 0)
@@ -88,7 +88,7 @@ open class SurveyCaptureApplication {
     )
 
     @Bean
-    open fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
+    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = consumerFactory()
         return factory
@@ -128,3 +128,10 @@ class KafkaConfig {
 
 }
 annotation class NoArgConstructor
+
+
+class ValidationException(message: String) : RuntimeException(message) {
+    companion object {
+        private val serialVersionUID = -3685317928211708951L
+    }
+}

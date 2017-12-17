@@ -12,20 +12,20 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(value = "/results/{surveyId}", headers = arrayOf("Accept=application/vnd.survey-1.0+json"))
+@RequestMapping(value = ["/results/{surveyId}"], headers = ["Accept=application/vnd.survey-1.0+json"])
 @Api(description = "Provides operations to get response data")
 class ResultsController {
 
     @Autowired
-    private val captureService: SurveyCaptureService? = null
+    private lateinit var captureService: SurveyCaptureService
 
     @Autowired
-    private val userService: UserService? = null
+    private lateinit var userService: UserService
 
     @GetMapping("/{questionId}")
     @ApiOperation("Get all responses on single question.")
     fun getAnswersOnQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int?): List<QuestionAnswer> {
-        return captureService!!.getAnswersOnQuestion(surveyId, questionId)
+        return captureService.getAnswersOnQuestion(surveyId, questionId)
 
     }
 

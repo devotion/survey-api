@@ -14,20 +14,20 @@ import javax.servlet.http.HttpServletResponse
 import javax.validation.Valid
 
 @RestController
-@RequestMapping(value = "/capture/{surveyId}", headers = arrayOf("Accept=application/vnd.survey-1.0+json"))
+@RequestMapping(value = ["/capture/{surveyId}"], headers = ["Accept=application/vnd.survey-1.0+json"])
 @Api(description = "Operations needed to capture submission of survey")
 class SubmitController {
 
     @Autowired
-    private val captureService: SurveyCaptureService? = null
+    private lateinit var captureService: SurveyCaptureService
 
     @Autowired
-    private val userService: UserService? = null
+    private lateinit var userService: UserService
 
     @PostMapping("/")
     @ApiOperation(value = "Submit survey with all answers.", code = HttpServletResponse.SC_CREATED)
     fun submitSurvey(@PathVariable surveyId: String, @RequestBody @Valid surveyAnswers: AnswersDto, request: HttpServletRequest): ResponseEntity<*> {
-        captureService!!.submitWholeSurvey(userService!!.resolveUser(request), surveyAnswers.answers, surveyId)
+        captureService.submitWholeSurvey(userService.resolveUser(request), surveyAnswers.answers, surveyId)
         return ResponseEntity.status(HttpStatus.CREATED).build<Any>()
     }
 
