@@ -5,13 +5,19 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.modelmapper.ModelMapper
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
-import org.springframework.kafka.core.*
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.converter.StringJsonMessageConverter
+import org.springframework.stereotype.Component
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.RequestHandlerSelectors
 import springfox.documentation.service.Contact
@@ -20,19 +26,16 @@ import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.util.*
 
-
 @SpringBootApplication
 @EnableSwagger2
 open class SurveyCaptureApplication {
 
-    @Value("\${kafka.bootstrap-servers}")
-    private lateinit var bootstrapAddress: String
 
-    @Value("\${kafka.consumer-group}")
-    private lateinit var consumerGroupName: String
+    @Autowired
+    private lateinit var apiConfig: ApiConfig
 
-    @Value("\${api.version}")
-    private lateinit var apiVersion: String
+    @Autowired
+    private lateinit var kafkaConfig: KafkaConfig
 
     @Bean
     open fun modelMapper() = ModelMapper()
@@ -64,8 +67,8 @@ open class SurveyCaptureApplication {
 
     @Bean
     open fun consumerProperties() = HashMap<String, Any>().apply {
-        put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
-        put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupName)
+        put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.bootstrapAddress)
+        put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConfig.consumerGroupName)
         put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false)
         put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 15000)
         put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
@@ -75,7 +78,7 @@ open class SurveyCaptureApplication {
     @Bean
     open fun producerFactory() = DefaultKafkaProducerFactory<String, String>(
             HashMap<String, Any>().apply {
-                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
+                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.bootstrapAddress)
                 put(ProducerConfig.RETRIES_CONFIG, 0)
                 put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
                 put(ProducerConfig.LINGER_MS_CONFIG, 1)
@@ -93,10 +96,10 @@ open class SurveyCaptureApplication {
     }
 
     private fun apiInfo() = ApiInfoBuilder()
-            .title("Survey submission API")
-            .description("Operations on this API allows you to capture results of survey submission.")
-            .contact(Contact("Dragan Ljubojevic", "", "dragan.ljubojevic@gmail.com"))
-            .version(apiVersion)
+            .title(apiConfig.title)
+            .description(apiConfig.description)
+            .contact(Contact("", "", apiConfig.contactEmail))
+            .version(apiConfig.version)
             .build()
 
     companion object {
@@ -106,3 +109,23 @@ open class SurveyCaptureApplication {
         }
     }
 }
+
+@Component
+@ConfigurationProperties(prefix = "api")
+class ApiConfig {
+    lateinit var version: String
+    lateinit var title: String
+    lateinit var description: String
+    lateinit var contactEmail: String
+}
+
+@Component
+@ConfigurationProperties(prefix = "kafka")
+class KafkaConfig {
+     lateinit var bootstrapAddress: String
+     lateinit var consumerGroupName: String
+     lateinit var resultCapturedTopic: String
+     lateinit var resultStoredTopic: String
+
+}
+

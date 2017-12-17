@@ -1,5 +1,6 @@
 package com.devotion.capture.service;
 
+import com.devotion.capture.KafkaConfig;
 import com.devotion.capture.dto.QuestionAnswerDto;
 import com.devotion.capture.event.CaptureResultCreatedEvent;
 import com.devotion.capture.model.QuestionAnswer;
@@ -11,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -31,11 +31,8 @@ import java.util.List;
 @Slf4j
 public class DefaultSurveyCaptureService implements SurveyCaptureService {
 
-    @Value("${kafka.result-captured-topic}")
-    private String resultCaptureTopic;
-
-    @Value("${kafka.result-stored-topic}")
-    private String resultStoreTopic;
+    @Autowired
+    private KafkaConfig kafkaConfig;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -54,7 +51,7 @@ public class DefaultSurveyCaptureService implements SurveyCaptureService {
 
     @Override
     public void submitWholeSurvey(User user, @NotEmpty List<QuestionAnswerDto> surveyAnswers, @NotEmpty String surveyId) {
-        sendTo(resultCaptureTopic, new CaptureResultCreatedEvent(user, surveyId, surveyAnswers));
+        sendTo(kafkaConfig.resultCapturedTopic, new CaptureResultCreatedEvent(user, surveyId, surveyAnswers));
     }
 
     @KafkaListener(topics = "result-captured", containerFactory = "jsonKafkaListenerContainerFactory")
@@ -74,7 +71,7 @@ public class DefaultSurveyCaptureService implements SurveyCaptureService {
         // 3. store
         SurveyResult surveyResult = resultRepository.insert(newResult);
         // 4. send success persistence event
-        sendTo(resultStoreTopic, surveyResult);
+        sendTo(kafkaConfig.resultStoredTopic, surveyResult);
     }
 
     private void sendTo(String topic, Object message) {
