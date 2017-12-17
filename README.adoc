@@ -91,10 +91,14 @@ Please note that due to service discovery it could take up to 3 heartbeat cycles
 `docker-compose down --rmi local`
 
 = API Documentation
-Once you run application you can http://localhost/swagger-ui.html[go to swagger UI]
-for more details
+
+* result-capture: http://resultcapture-service.surveyapi.docker.localhost/swagger-ui.html
+* authoring: http://authoring-service.surveyapi.docker.localhost/swagger-ui.html
+* analytics: http://analytics-service.surveyapi.docker.localhost/swagger-ui.html
 
 = Logging & Monitoring
+Treafik Dashboard: http://localhost:8080
+
 TBD
 
 = Testing

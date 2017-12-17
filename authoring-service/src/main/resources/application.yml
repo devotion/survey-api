@@ -9,9 +9,7 @@ spring:
       database: survey
       port: 27017
 server:
-  servlet:
-    context-path: /authoring/
-  port: 7878
+  port: 7979
 logging:
   level:
     com.draganlj.survey: DEBUG
