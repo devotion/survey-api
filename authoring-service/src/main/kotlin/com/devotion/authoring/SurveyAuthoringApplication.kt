@@ -27,7 +27,7 @@ open class SurveyAuthoringApplication {
     @Bean
     open fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
             .select()
-            .apis(RequestHandlerSelectors.basePackage("com.draganlj.survey.authoring"))
+            .apis(RequestHandlerSelectors.basePackage("com.devotion.authoring"))
             .build().apiInfo(metadata())
 
     private fun metadata(): ApiInfo {

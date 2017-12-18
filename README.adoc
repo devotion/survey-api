@@ -70,7 +70,7 @@ Versioning method of choice is use of Accept header in each request `Accept=appl
 
 ==== Build:
 
-* `git clone https://github.com/ljufa/survey-api.git`
+* `git clone https://github.com/devotion/survey-api.git`
 * `cd survey`
 * `./mvnw clean package`
  
@@ -97,7 +97,7 @@ Please note that due to service discovery it could take up to 3 heartbeat cycles
 * analytics: http://analytics-service.surveyapi.docker.localhost/swagger-ui.html
 
 = Logging & Monitoring
-Treafik Dashboard: http://localhost:8080
+Traefik Dashboard: http://localhost:8080
 
 TBD
 

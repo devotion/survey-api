@@ -8,15 +8,22 @@ spring:
       password: password
       database: results
       port: 27017
+
 kafka:
-  bootstrap-servers: kafka:9092
-  consumer-group: resultCaptureGroup
-  result-captured-topic: result-captured
-  result-stored-topic: result-stored
+  bootstrapAddress: kafka:9092
+  consumerGroupName: resultCaptureGroup
+  resultCapturedTopic: result-captured
+  resultStoredTopic: result-stored
+
 server:
   port: 7979
+
 logging:
   level:
-    com.draganlj.survey: DEBUG
+    com.devotion.capture: DEBUG
+
 api:
   version: 1.0
+  title: Survey submission API
+  description: Operations on this API allows you to capture results of survey submission
+  contactEmail: devotion-dev@gmail.com

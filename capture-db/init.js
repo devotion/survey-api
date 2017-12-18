@@ -8,7 +8,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:44:49.023Z")
@@ -20,7 +20,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:45:57.207Z")
@@ -32,7 +32,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:46:08.813Z")
@@ -44,7 +44,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:46:09.412Z")
@@ -56,7 +56,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:46:09.821Z")
@@ -68,7 +68,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:46:23.210Z")
@@ -80,7 +80,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:46:24.817Z")
@@ -92,7 +92,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:47:03.177Z")
@@ -104,7 +104,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:47:03.610Z")
@@ -116,7 +116,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:50:03.713Z")
@@ -128,7 +128,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:50:04.351Z")
@@ -140,7 +140,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:50:04.549Z")
@@ -152,7 +152,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:50:04.730Z")
@@ -164,7 +164,7 @@ db.surveyresults.insertMany(
     "_class" : "com.draganlj.survey.capture.model.SurveyResult",
     "surveyId" : "1",
     "user" : {
-        "_class" : "com.draganlj.survey.capture.model.AnonumousUser",
+        "_class" : "com.devotion.capture.model.AnonymousUser",
         "uniqueId" : "172.21.0.5"
     },
     "submitDate" : ISODate("2017-08-31T17:50:04.865Z")

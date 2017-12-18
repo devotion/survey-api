@@ -5,13 +5,18 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.modelmapper.ModelMapper
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
-import org.springframework.kafka.core.*
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.converter.StringJsonMessageConverter
+import org.springframework.stereotype.Component
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.RequestHandlerSelectors
 import springfox.documentation.service.Contact
@@ -20,52 +25,43 @@ import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.util.*
 
-
 @SpringBootApplication
 @EnableSwagger2
-open class SurveyCaptureApplication {
+class SurveyCaptureApplication {
+    @Autowired
+    private lateinit var apiConfig: ApiConfig
 
-    @Value("\${kafka.bootstrap-servers}")
-    private lateinit var bootstrapAddress: String
-
-    @Value("\${kafka.consumer-group}")
-    private lateinit var consumerGroupName: String
-
-    @Value("\${api.version}")
-    private lateinit var apiVersion: String
+    @Autowired
+    private lateinit var kafkaConfig: KafkaConfig
 
     @Bean
-    open fun modelMapper() = ModelMapper()
+    fun modelMapper() = ModelMapper()
 
     @Bean
-    open fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
+    fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
             .select()
             .apis(RequestHandlerSelectors.basePackage("com.devotion"))
             .build()
             .apiInfo(apiInfo())
 
     @Bean
-    open fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
-        val kafkaTemplate = KafkaTemplate(producerFactory)
-        kafkaTemplate.setMessageConverter(StringJsonMessageConverter())
-        return kafkaTemplate
-    }
+    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>) =
+            KafkaTemplate(producerFactory).apply { setMessageConverter(StringJsonMessageConverter()) }
 
     @Bean
-    open fun jsonKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
-        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = consumerFactory()
-        factory.setMessageConverter(StringJsonMessageConverter())
-        return factory
-    }
+    fun jsonKafkaListenerContainerFactory() =
+            ConcurrentKafkaListenerContainerFactory<String, String>().apply {
+                consumerFactory = consumerFactory()
+                setMessageConverter(StringJsonMessageConverter())
+            }
 
     @Bean
-    open fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
+    fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
 
     @Bean
-    open fun consumerProperties() = HashMap<String, Any>().apply {
-        put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
-        put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupName)
+    fun consumerProperties() = HashMap<String, Any>().apply {
+        put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.bootstrapAddress)
+        put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConfig.consumerGroupName)
         put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false)
         put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 15000)
         put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
@@ -73,9 +69,9 @@ open class SurveyCaptureApplication {
     }
 
     @Bean
-    open fun producerFactory() = DefaultKafkaProducerFactory<String, String>(
+    fun producerFactory() = DefaultKafkaProducerFactory<String, String>(
             HashMap<String, Any>().apply {
-                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress)
+                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.bootstrapAddress)
                 put(ProducerConfig.RETRIES_CONFIG, 0)
                 put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
                 put(ProducerConfig.LINGER_MS_CONFIG, 1)
@@ -86,17 +82,14 @@ open class SurveyCaptureApplication {
     )
 
     @Bean
-    open fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
-        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = consumerFactory()
-        return factory
-    }
+    fun kafkaListenerContainerFactory() =
+            ConcurrentKafkaListenerContainerFactory<String, String>().apply { consumerFactory = consumerFactory() }
 
     private fun apiInfo() = ApiInfoBuilder()
-            .title("Survey submission API")
-            .description("Operations on this API allows you to capture results of survey submission.")
-            .contact(Contact("Dragan Ljubojevic", "", "dragan.ljubojevic@gmail.com"))
-            .version(apiVersion)
+            .title(apiConfig.title)
+            .description(apiConfig.description)
+            .contact(Contact("", "", apiConfig.contactEmail))
+            .version(apiConfig.version)
             .build()
 
     companion object {
@@ -104,5 +97,31 @@ open class SurveyCaptureApplication {
         fun main(args: Array<String>) {
             SpringApplication.run(SurveyCaptureApplication::class.java, *args)
         }
+    }
+}
+
+@Component
+@ConfigurationProperties(prefix = "api")
+class ApiConfig {
+    lateinit var version: String
+    lateinit var title: String
+    lateinit var description: String
+    lateinit var contactEmail: String
+}
+
+@Component
+@ConfigurationProperties(prefix = "kafka")
+class KafkaConfig {
+    lateinit var bootstrapAddress: String
+    lateinit var consumerGroupName: String
+    lateinit var resultCapturedTopic: String
+    lateinit var resultStoredTopic: String
+}
+
+annotation class NoArgConstructor
+
+class ValidationException(message: String) : RuntimeException(message) {
+    companion object {
+        private val serialVersionUID = -3685317928211708951L
     }
 }
