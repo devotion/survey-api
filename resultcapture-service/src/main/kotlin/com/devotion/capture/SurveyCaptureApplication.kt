@@ -28,8 +28,6 @@ import java.util.*
 @SpringBootApplication
 @EnableSwagger2
 class SurveyCaptureApplication {
-
-
     @Autowired
     private lateinit var apiConfig: ApiConfig
 
@@ -47,19 +45,15 @@ class SurveyCaptureApplication {
             .apiInfo(apiInfo())
 
     @Bean
-    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
-        val kafkaTemplate = KafkaTemplate(producerFactory)
-        kafkaTemplate.setMessageConverter(StringJsonMessageConverter())
-        return kafkaTemplate
-    }
+    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>) =
+            KafkaTemplate(producerFactory).apply { setMessageConverter(StringJsonMessageConverter()) }
 
     @Bean
-    fun jsonKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
-        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = consumerFactory()
-        factory.setMessageConverter(StringJsonMessageConverter())
-        return factory
-    }
+    fun jsonKafkaListenerContainerFactory() =
+            ConcurrentKafkaListenerContainerFactory<String, String>().apply {
+                consumerFactory = consumerFactory()
+                setMessageConverter(StringJsonMessageConverter())
+            }
 
     @Bean
     fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
@@ -88,11 +82,8 @@ class SurveyCaptureApplication {
     )
 
     @Bean
-    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
-        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = consumerFactory()
-        return factory
-    }
+    fun kafkaListenerContainerFactory() =
+            ConcurrentKafkaListenerContainerFactory<String, String>().apply { consumerFactory = consumerFactory() }
 
     private fun apiInfo() = ApiInfoBuilder()
             .title(apiConfig.title)
@@ -121,14 +112,13 @@ class ApiConfig {
 @Component
 @ConfigurationProperties(prefix = "kafka")
 class KafkaConfig {
-     lateinit var bootstrapAddress: String
-     lateinit var consumerGroupName: String
-     lateinit var resultCapturedTopic: String
-     lateinit var resultStoredTopic: String
-
+    lateinit var bootstrapAddress: String
+    lateinit var consumerGroupName: String
+    lateinit var resultCapturedTopic: String
+    lateinit var resultStoredTopic: String
 }
-annotation class NoArgConstructor
 
+annotation class NoArgConstructor
 
 class ValidationException(message: String) : RuntimeException(message) {
     companion object {

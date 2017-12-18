@@ -1,8 +1,6 @@
 package com.devotion.capture.api
 
-import com.devotion.capture.model.QuestionAnswer
 import com.devotion.capture.service.SurveyCaptureService
-import com.devotion.capture.service.UserService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,14 +17,8 @@ class ResultsController {
     @Autowired
     private lateinit var captureService: SurveyCaptureService
 
-    @Autowired
-    private lateinit var userService: UserService
-
     @GetMapping("/{questionId}")
     @ApiOperation("Get all responses on single question.")
-    fun getAnswersOnQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int): List<QuestionAnswer> {
-        return captureService.getAnswersOnQuestion(surveyId, questionId)
-
-    }
-
+    fun getAnswersOnQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int) =
+            captureService.getAnswersOnQuestion(surveyId, questionId)
 }
