@@ -39,9 +39,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         surveyRepository.save(survey)
     }
 
-    override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int) {
-        throw RuntimeException("not implemented")
-    }
+    override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int) = throw RuntimeException("not implemented")
 
     override fun getQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, fetchAnswers: Boolean): QuestionAll {
         log.debug("Invoke get question surveyId={}, questionId={}", surveyId, questionId)
@@ -70,14 +68,10 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         return modelMapper.map(answers, answersDtoListType)
     }
 
-    override fun deleteAnswer(@NotEmpty answerId: String) {
-        answerRepository.deleteById(answerId)
-    }
+    override fun deleteAnswer(@NotEmpty answerId: String) = answerRepository.deleteById(answerId)
 
     override fun updateAnswer(@NotEmpty answerId: String, @Valid answer: AnswerText) {
-        val existingOne = answerRepository.findById(answerId).get()
-        existingOne.answerText = answer.answerText
-        answerRepository.save(existingOne)
+        answerRepository.save(answerRepository.findById(answerId).get().apply { answerText = answer.answerText })
     }
 
     override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: Int, @Valid answer: AnswerText): Answer {
