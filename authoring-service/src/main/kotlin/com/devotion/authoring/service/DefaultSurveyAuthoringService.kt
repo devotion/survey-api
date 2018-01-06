@@ -85,11 +85,11 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     // todo: implement better and more flexible/reusable validation by using spring custom validators
     private fun validate(input: Optional<Survey>): Survey {
         if (!input.isPresent) {
-            throw ValidationException(String.format("Survey [%s] could not be found", input))
+            throw ValidationException("Survey [$input] could not be found")
         }
         val result = input.get()
         if (result.published!!) {
-            throw ValidationException(String.format("Survey [%s] is already published", input))
+            throw ValidationException("Survey [$input] is already published")
         }
         return result
     }
@@ -98,7 +98,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         val survey = validate(input)
         val questions = survey.questions
         if (questions.size < questionId) {
-            throw ValidationException(String.format("Survey [%s] has no question with id {%s}", survey, questionId))
+            throw ValidationException("Survey [$survey] has no question with id [$questionId]")
         }
         return survey
     }
