@@ -9,38 +9,62 @@ import org.modelmapper.ModelMapper
 import org.modelmapper.TypeToken
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.support.KafkaHeaders
+import org.springframework.messaging.support.GenericMessage
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
+import com.devotion.authoring.KafkaConfig
+import org.springframework.kafka.annotation.KafkaListener
+
 
 @Service
 class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: SurveyRepository,
                                     @Autowired private val answerRepository: AnswerRepository,
-                                    @Autowired private val modelMapper: ModelMapper) : SurveyAuthoringService {
-    private val log = LoggerFactory.getLogger(this::class.java)
+                                    @Autowired private val modelMapper: ModelMapper,
+                                    @Autowired private val kafkaConfig: KafkaConfig,
+                                    @Autowired private val kafkaTemplate: KafkaTemplate<String, String>) : SurveyAuthoringService {
+
+    private val log = LoggerFactory.getLogger(DefaultSurveyAuthoringService::class.java)
     private val questionDtoListType = object : TypeToken<List<QuestionIdAndText>>() {}.type
     private val answersDtoListType = object : TypeToken<List<AnswerIdAndText>>() {}.type
 
-    override fun addQuestion(@NotEmpty surveyId: String, @Valid question: QuestionText): Question {
-        val survey = validate(surveyRepository.findById(surveyId))
-        val questions = survey.questions
-        val newQuestion = modelMapper.map(question, Question::class.java)
-        newQuestion.id = questions.size
-        questions.add(newQuestion)
-        surveyRepository.save(survey)
-        return newQuestion
+    override fun addQuestion(@NotEmpty surveyId: String, @Valid question: QuestionText) {
+        kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.CREATE, surveyId, null, question),
+                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
     }
 
     override fun updateQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, @Valid question: QuestionText) {
-        val survey = validate(surveyRepository.findById(surveyId), questionId)
-        survey.questions[questionId] = modelMapper.map(question, Question::class.java)
-        surveyRepository.save(survey)
+        kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.UPDATE, surveyId, questionId, question),
+                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
     }
 
     override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int) {
         throw RuntimeException("not implemented")
+    }
+
+    @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory")
+    fun onModifyQuestionEvent(event: ModifyQuestionEvent) {
+        val survey = validate(surveyRepository.findById(event.surveyId))
+        val newQuestion = modelMapper.map(event.question, Question::class.java)
+        when (event.action) {
+            Action.CREATE -> {
+                newQuestion.id = survey.questions.size
+                survey.questions.add(newQuestion)
+            }
+            Action.UPDATE -> {
+                newQuestion.id = event.questionId
+                survey.questions[event.questionId!!] = newQuestion
+            }
+            Action.DELETE -> {
+                survey.questions.removeAt(event.questionId!!);
+            }
+        }
+        surveyRepository.save(survey)
+        kafkaTemplate.send(GenericMessage(survey, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.surveyStoredTopic)))
     }
 
     override fun getQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, fetchAnswers: Boolean): QuestionAll {
@@ -70,14 +94,14 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         return modelMapper.map(answers, answersDtoListType)
     }
 
-    override fun deleteAnswer(@NotEmpty answerId: String) {
-        answerRepository.deleteById(answerId)
-    }
-
     override fun updateAnswer(@NotEmpty answerId: String, @Valid answer: AnswerText) {
         val existingOne = answerRepository.findById(answerId).get()
         existingOne.answerText = answer.answerText
         answerRepository.save(existingOne)
+    }
+
+    override fun deleteAnswer(@NotEmpty answerId: String) {
+        answerRepository.deleteById(answerId)
     }
 
     override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: Int, @Valid answer: AnswerText): Answer {

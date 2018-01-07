@@ -24,9 +24,8 @@ class QuestionController {
     @PostMapping("/")
     @ApiOperation(value = "Add question to survey", code = HttpServletResponse.SC_CREATED)
     fun addQuestion(@PathVariable surveyId: String, @Valid @RequestBody question: QuestionText): ResponseEntity<*> {
-        val saved = service.addQuestion(surveyId, question)
-        val location = getUri(saved.id.toString())
-        return ResponseEntity.created(location).build<Any>()
+        service.addQuestion(surveyId, question)
+        return ResponseEntity.accepted().build<Any>()
     }
 
     @PutMapping("/{questionId}")
