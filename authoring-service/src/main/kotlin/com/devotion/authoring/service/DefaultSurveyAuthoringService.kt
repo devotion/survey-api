@@ -1,5 +1,6 @@
 package com.devotion.authoring.service
 
+import com.devotion.authoring.KafkaConfig
 import com.devotion.authoring.ValidationException
 import com.devotion.authoring.dto.*
 import com.devotion.authoring.model.Answer
@@ -9,6 +10,7 @@ import org.modelmapper.ModelMapper
 import org.modelmapper.TypeToken
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.support.GenericMessage
@@ -17,8 +19,6 @@ import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
-import com.devotion.authoring.KafkaConfig
-import org.springframework.kafka.annotation.KafkaListener
 
 
 @Service
@@ -43,12 +43,14 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int) {
-        throw RuntimeException("not implemented")
+        kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.DELETE, surveyId, questionId),
+                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
     }
 
-    @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory")
+    @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory", errorHandler = "validationErrorHandler")
     fun onModifyQuestionEvent(event: ModifyQuestionEvent) {
-        val survey = validate(surveyRepository.findById(event.surveyId))
+        val survey = getValidSurvey(surveyRepository.findById(event.surveyId))
+        validateModifyEvent(event, survey)
         val newQuestion = modelMapper.map(event.question, Question::class.java)
         when (event.action) {
             Action.CREATE -> {
@@ -67,6 +69,34 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         kafkaTemplate.send(GenericMessage(survey, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.surveyStoredTopic)))
     }
 
+    private fun validateModifyEvent(event: ModifyQuestionEvent, survey: Survey) {
+        when (event.action) {
+            Action.CREATE -> {
+                if (event.question.questionText.isNullOrBlank())
+                    throw ValidationException("Question text can not be empty.", "Invalid event [$event].")
+            }
+            Action.UPDATE -> {
+                val exception = ValidationException()
+                if (event.questionId == null || event.questionId !in (0 until survey.questions.size - 1)) {
+                    exception.messages.push("Question id is not valid.")
+                }
+                if(event.question.questionText.isNullOrBlank()){
+                    exception.messages.push("Question text can't be null or empty.")
+                }
+                if(exception.messages.isNotEmpty()){
+                    exception.messages.push("Invalid event [$event]")
+                    throw exception
+                }
+            }
+            Action.DELETE -> {
+                if (event.questionId == null || event.questionId !in (0 until survey.questions.size - 1)) {
+                    throw ValidationException("Question id is not valid.","Invalid event [$event].")
+                }
+            }
+        }
+    }
+
+
     override fun getQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, fetchAnswers: Boolean): QuestionAll {
         log.debug("Invoke get question surveyId={}, questionId={}", surveyId, questionId)
         val survey = validate(surveyRepository.findById(surveyId), questionId)
@@ -83,7 +113,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     override fun getAllQuestions(@NotEmpty surveyId: String): List<QuestionIdAndText> {
-        val survey = validate(surveyRepository.findById(surveyId))
+        val survey = getValidSurvey(surveyRepository.findById(surveyId))
         val questions = survey.questions
         return modelMapper.map(questions, questionDtoListType)
     }
@@ -112,7 +142,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     // todo: implement better and more flexible/reusable validation by using spring custom validators
-    private fun validate(input: Optional<Survey>): Survey {
+    private fun getValidSurvey(input: Optional<Survey>): Survey {
         if (!input.isPresent) {
             throw ValidationException("Survey [$input] could not be found")
         }
@@ -124,7 +154,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     private fun validate(input: Optional<Survey>, questionId: Int): Survey {
-        val survey = validate(input)
+        val survey = getValidSurvey(input)
         val questions = survey.questions
         if (questions.size < questionId) {
             throw ValidationException("Survey [$survey] has no question with id [$questionId]")

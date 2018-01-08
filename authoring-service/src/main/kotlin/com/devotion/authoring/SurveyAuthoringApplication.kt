@@ -1,5 +1,6 @@
 package com.devotion.authoring
 
+import kafka.message.Message
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -15,6 +16,8 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.listener.KafkaListenerErrorHandler
+import org.springframework.kafka.listener.ListenerExecutionFailedException
 import org.springframework.kafka.support.converter.StringJsonMessageConverter
 import org.springframework.stereotype.Component
 import springfox.documentation.builders.ApiInfoBuilder
@@ -28,7 +31,7 @@ import java.util.*
 
 @SpringBootApplication
 @EnableSwagger2
-open class  SurveyAuthoringApplication {
+open class SurveyAuthoringApplication {
 
     @Autowired
     private lateinit var apiConfig: ApiConfig
@@ -52,10 +55,11 @@ open class  SurveyAuthoringApplication {
 
     @Bean
     fun jsonKafkaListenerContainerFactory() =
-            ConcurrentKafkaListenerContainerFactory<String, String>().apply {
-                consumerFactory = consumerFactory()
-                setMessageConverter(StringJsonMessageConverter())
-            }
+        ConcurrentKafkaListenerContainerFactory<String, String>().apply {
+            consumerFactory = consumerFactory()
+            setMessageConverter(StringJsonMessageConverter())
+
+    }
 
     @Bean
     fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())
@@ -85,7 +89,13 @@ open class  SurveyAuthoringApplication {
 
     @Bean
     fun kafkaListenerContainerFactory() =
-            ConcurrentKafkaListenerContainerFactory<String, String>().apply { consumerFactory = consumerFactory() }
+        ConcurrentKafkaListenerContainerFactory<String, String>().apply { consumerFactory = consumerFactory() }
+
+
+    @Bean
+    fun validationErrorHandler(): KafkaListenerErrorHandler {
+        return KafkaListenerErrorHandler { m, e -> print("this is realy bad ${e} | ${m}") }
+    }
 
     private fun apiInfo() = ApiInfoBuilder()
             .title(apiConfig.title)
@@ -128,9 +138,21 @@ class KafkaConfig {
 
 annotation class NoArgConstructor
 
-class ValidationException(message: String) : RuntimeException(message) {
+class ValidationException : RuntimeException {
     companion object {
         private val serialVersionUID = -3685317928211708951L
     }
-}
+    constructor() {
 
+    }
+    constructor(message: String): super (message){
+        messages.push(message)
+    }
+    constructor(vararg msgs: String){
+        for(msg in msgs)
+            messages.push(msg)
+    }
+
+    var messages : Stack<String> = Stack<String>()
+
+}

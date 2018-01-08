@@ -36,7 +36,7 @@ class QuestionController {
     }
 
     @DeleteMapping("/{questionId}")
-    @ApiOperation("TODO: Remove question from survey")
+    @ApiOperation("Remove question from survey")
     fun deleteQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int): ResponseEntity<*> {
         service.deleteQuestion(surveyId, questionId)
         return ResponseEntity.ok().build<Any>()

@@ -5,4 +5,4 @@ enum class Action {
     CREATE, UPDATE, DELETE
 }
 @NoArgConstructor
-class ModifyQuestionEvent(val action: Action, val surveyId: String, val questionId : Int?, val question: QuestionText)
+class ModifyQuestionEvent(val action: Action, val surveyId: String, val questionId : Int?, val question: QuestionText = QuestionText(null))
