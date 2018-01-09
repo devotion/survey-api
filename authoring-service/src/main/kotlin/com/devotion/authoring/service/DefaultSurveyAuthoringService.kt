@@ -20,7 +20,6 @@ import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
-
 @Service
 class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: SurveyRepository,
                                     @Autowired private val answerRepository: AnswerRepository,
@@ -34,17 +33,17 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
 
     override fun addQuestion(@NotEmpty surveyId: String, @Valid question: QuestionText) {
         kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.CREATE, surveyId, null, question),
-                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
+                mapOf<String, Any>(KafkaHeaders.TOPIC to kafkaConfig.questionCapturedTopic)))
     }
 
     override fun updateQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, @Valid question: QuestionText) {
         kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.UPDATE, surveyId, questionId, question),
-                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
+                mapOf<String, Any>(KafkaHeaders.TOPIC to kafkaConfig.questionCapturedTopic)))
     }
 
     override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int) {
         kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.DELETE, surveyId, questionId),
-                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
+                mapOf<String, Any>(KafkaHeaders.TOPIC to kafkaConfig.questionCapturedTopic)))
     }
 
     @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory", errorHandler = "validationErrorHandler")
@@ -66,7 +65,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
             }
         }
         surveyRepository.save(survey)
-        kafkaTemplate.send(GenericMessage(survey, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.surveyStoredTopic)))
+        kafkaTemplate.send(GenericMessage(survey, mapOf<String, Any>(KafkaHeaders.TOPIC to kafkaConfig.surveyStoredTopic)))
     }
 
     private fun validateModifyEvent(event: ModifyQuestionEvent, survey: Survey) {
@@ -128,7 +127,6 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         val existingOne = answerRepository.findById(answerId).get()
         existingOne.answerText = answer.answerText
         answerRepository.save(answerRepository.findById(answerId).get().apply { answerText = answer.answerText })
-
     }
 
     override fun deleteAnswer(@NotEmpty answerId: String) = answerRepository.deleteById(answerId)
