@@ -1,5 +1,6 @@
 package com.devotion.authoring.api
 
+import com.devotion.authoring.dto.Payload
 import com.devotion.authoring.dto.QuestionAll
 import com.devotion.authoring.dto.QuestionIdAndText
 import com.devotion.authoring.dto.QuestionText
@@ -8,8 +9,6 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder
-import java.net.URI
 import javax.servlet.http.HttpServletResponse
 import javax.validation.Valid
 
@@ -41,19 +40,12 @@ class QuestionController(private val service: SurveyAuthoringService) {
 
     @GetMapping("/{questionId}")
     @ApiOperation("Return single question with answers")
-    fun getQuestionWithAnswers(@PathVariable surveyId: String, @PathVariable questionId: Int): QuestionAll {
-        return service.getQuestion(surveyId, questionId, true)
+    fun getQuestionWithAnswers(@PathVariable surveyId: String, @PathVariable questionId: Int): ResponseEntity<QuestionAll> {
+        return ResponseEntity.ok(service.getQuestion(surveyId, questionId, true))
     }
 
     @GetMapping("/")
     @ApiOperation("Return all questions from survey with no answers")
-    fun getAllQuestions(@PathVariable surveyId: String): List<QuestionIdAndText> {
-        return service.getAllQuestions(surveyId)
-    }
-
-    private fun getUri(id: String): URI {
-        return ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(id).toUri()
-    }
+    fun getAllQuestions(@PathVariable surveyId: String): ResponseEntity<Payload<List<QuestionIdAndText>>> =
+            ResponseEntity.ok(Payload(service.getAllQuestions(surveyId)))
 }

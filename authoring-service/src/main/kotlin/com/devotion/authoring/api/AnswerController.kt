@@ -2,6 +2,7 @@ package com.devotion.authoring.api
 
 import com.devotion.authoring.dto.AnswerIdAndText
 import com.devotion.authoring.dto.AnswerText
+import com.devotion.authoring.dto.Payload
 import com.devotion.authoring.service.SurveyAuthoringService
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.ResponseEntity
@@ -38,9 +39,8 @@ class AnswerController(private val service: SurveyAuthoringService) {
 
     @GetMapping("/{surveyId}/{questionId}")
     @ApiOperation("Get all answers for question")
-    fun getAllAnswers(@PathVariable surveyId: String, @PathVariable questionId: Int): List<AnswerIdAndText> {
-        return service.getAllAnswers(surveyId, questionId)
-    }
+    fun getAllAnswers(@PathVariable surveyId: String, @PathVariable questionId: Int): ResponseEntity<Payload<List<AnswerIdAndText>>> =
+            ResponseEntity.ok(Payload(service.getAllAnswers(surveyId, questionId)))
 
     private fun getUri(id: String): URI {
         return ServletUriComponentsBuilder

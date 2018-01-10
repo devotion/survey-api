@@ -44,15 +44,15 @@ class SurveyCaptureApplication {
             .apiInfo(apiInfo())
 
     @Bean
-    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>) =
-            KafkaTemplate(producerFactory).apply { setMessageConverter(StringJsonMessageConverter()) }
+    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>) = KafkaTemplate(producerFactory).apply {
+        setMessageConverter(StringJsonMessageConverter())
+    }
 
     @Bean
-    fun jsonKafkaListenerContainerFactory() =
-            ConcurrentKafkaListenerContainerFactory<String, String>().apply {
-                consumerFactory = consumerFactory()
-                setMessageConverter(StringJsonMessageConverter())
-            }
+    fun jsonKafkaListenerContainerFactory() = ConcurrentKafkaListenerContainerFactory<String, String>().apply {
+        consumerFactory = consumerFactory()
+        setMessageConverter(StringJsonMessageConverter())
+    }
 
     @Bean
     fun consumerFactory() = DefaultKafkaConsumerFactory<String, String>(consumerProperties())

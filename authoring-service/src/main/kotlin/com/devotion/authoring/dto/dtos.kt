@@ -12,3 +12,5 @@ class QuestionAll(var questionId: Int? = null, var questionText: String? = null,
 class QuestionIdAndText(@NotNull var questionId: Int? = null, @NotEmpty var questionText: String? = null)
 
 class AnswerIdAndText(@NotEmpty var answerId: String? = null, @NotEmpty var answerText: String? = null)
+
+data class Payload<T>(val data: T)
