@@ -24,8 +24,8 @@ class PayloadSerializerTest {
                 "first" to "dusan",
                 "last" to "odalovic"
         )
-        val jsonOut = json.write(Payload(body))
-        assertThat(jsonOut).extractingJsonPathMapValue<String, Map<String, String>>("data").isEqualTo(body)
+        val responsePayload = json.write(Payload(body))
+        assertThat(responsePayload).extractingJsonPathMapValue<String, Map<String, String>>("data").isEqualTo(body)
     }
 
     @Configuration
