@@ -1,14 +1,23 @@
 package com.devotion.authoring.model
 
+import com.devotion.authoring.NoArgConstructor
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.util.*
 
 @Document(collection = "answers")
-class Answer(@Id val id: String, var answerText: String, var surveyId: String, var questionId: Int)
+class Answer {
+    @Id
+    lateinit var id: String
+    lateinit var answerText: String
+    lateinit var surveyId: String
+    lateinit var questionId: String
+}
 
-@Document
-class Question(var id: Int? = null, var questionText: String? = null)
+@NoArgConstructor
+class Question( var questionText: String){
+    var id: String = UUID.randomUUID().toString()
+}
 
 @Document(collection = "surveys")
 class Survey(

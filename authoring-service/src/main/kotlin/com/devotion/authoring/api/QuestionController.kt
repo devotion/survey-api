@@ -24,28 +24,27 @@ class QuestionController {
     @PostMapping("/")
     @ApiOperation(value = "Add question to survey", code = HttpServletResponse.SC_CREATED)
     fun addQuestion(@PathVariable surveyId: String, @Valid @RequestBody question: QuestionText): ResponseEntity<*> {
-        val saved = service.addQuestion(surveyId, question)
-        val location = getUri(saved.id.toString())
-        return ResponseEntity.created(location).build<Any>()
+        service.addQuestion(surveyId, question)
+        return ResponseEntity.accepted().build<Any>()
     }
 
     @PutMapping("/{questionId}")
     @ApiOperation(value = "Update existing question in survey", code = HttpServletResponse.SC_NO_CONTENT)
-    fun updateQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int, @Valid @RequestBody question: QuestionText): ResponseEntity<*> {
+    fun updateQuestion(@PathVariable surveyId: String, @PathVariable questionId: String, @Valid @RequestBody question: QuestionText): ResponseEntity<*> {
         service.updateQuestion(surveyId, questionId, question)
         return ResponseEntity.noContent().build<Any>()
     }
 
     @DeleteMapping("/{questionId}")
-    @ApiOperation("TODO: Remove question from survey")
-    fun deleteQuestion(@PathVariable surveyId: String, @PathVariable questionId: Int): ResponseEntity<*> {
+    @ApiOperation("Remove question from survey")
+    fun deleteQuestion(@PathVariable surveyId: String, @PathVariable questionId: String): ResponseEntity<*> {
         service.deleteQuestion(surveyId, questionId)
         return ResponseEntity.ok().build<Any>()
     }
 
     @GetMapping("/{questionId}")
     @ApiOperation("Return single question with answers")
-    fun getQuestionWithAnswers(@PathVariable surveyId: String, @PathVariable questionId: Int): QuestionAll {
+    fun getQuestionWithAnswers(@PathVariable surveyId: String, @PathVariable questionId: String): QuestionAll {
         return service.getQuestion(surveyId, questionId, true)
     }
 

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface AnswerRepository : MongoRepository<Answer, String> {
-    fun findBySurveyIdAndQuestionId(surveyId: String, questionId: Int?): List<Answer>
+    fun findBySurveyIdAndQuestionId(surveyId: String, questionId: String?): List<Answer>
 }
 
 

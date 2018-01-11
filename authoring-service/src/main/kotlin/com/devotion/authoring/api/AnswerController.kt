@@ -20,7 +20,7 @@ class AnswerController {
 
     @PostMapping("/{surveyId}/{questionId}")
     @ApiOperation(value = "Add new answer to the question", code = HttpServletResponse.SC_CREATED)
-    fun addAnswer(@PathVariable surveyId: String, @PathVariable questionId: Int, @Valid @RequestBody answer: AnswerText): ResponseEntity<*> {
+    fun addAnswer(@PathVariable surveyId: String, @PathVariable questionId: String, @Valid @RequestBody answer: AnswerText): ResponseEntity<*> {
         val saved = service.addAnswer(surveyId, questionId, answer)
         return ResponseEntity.created(getUri(saved.id)).build<Any>()
     }
@@ -41,7 +41,7 @@ class AnswerController {
 
     @GetMapping("/{surveyId}/{questionId}")
     @ApiOperation("Get all answers for question")
-    fun getAllAnswers(@PathVariable surveyId: String, @PathVariable questionId: Int): List<AnswerIdAndText> {
+    fun getAllAnswers(@PathVariable surveyId: String, @PathVariable questionId: String): List<AnswerIdAndText> {
         return service.getAllAnswers(surveyId, questionId)
     }
 

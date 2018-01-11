@@ -8,11 +8,25 @@ spring:
       password: password
       database: survey
       port: 27017
+
+kafka:
+  bootstrapAddress: kafka:9092
+  consumerGroupName: authoringGroup
+  answerCapturedTopic: answer-captured
+  answerStoredTopic: answer-stored
+  questionCapturedTopic: question-captured
+  questionStoredTopic: question-stored
+  surveyStoredTopic: survey-stored
+
 server:
   port: 7979
+
 logging:
   level:
-    com.draganlj.survey: DEBUG
+    com.devotion.authoring: DEBUG
 
 api:
   version: 1.0
+  title: Survey authoring API
+  description: Operations on this API allows you to create syrvey with answers and questions.
+  contactEmail: devotion-dev@gmail.com

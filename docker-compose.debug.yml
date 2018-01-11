@@ -6,7 +6,7 @@ services:
       args:
         - java_opts=-Xmx256M -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=7007
     ports:
-      - 7879:7007
+      - 7890:7007
 
   resultcapture-service:
     build:

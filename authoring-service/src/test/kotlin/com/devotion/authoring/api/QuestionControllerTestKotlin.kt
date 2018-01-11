@@ -27,37 +27,37 @@ class QuestionControllerTestKotlin {
     @MockBean
     private lateinit var service: SurveyAuthoringService
 
-    @Before
-    fun setup() {
-        Mockito.`when`(service.addQuestion(Matchers.eq("1"), Matchers.any<QuestionText>())).thenReturn(Question(2))
-    }
-
-    @Test
-    fun `create question returns HTTP CREATED with location header`() {
-        val resultActions = mockMvc.perform(post("/questions/1/")
-                .content("{ \"questionText\": \"Fourth question\"}")
-                .contentType("application/vnd.survey-1.0+json")
-                .header("Accept", "application/vnd.survey-1.0+json"))
-        resultActions.andExpect(status().isCreated)
-        resultActions.andExpect(header().string("location", "http://localhost/questions/1/2"))
-    }
-
-    @Test
-    fun `returns HTTP bad request on wrong input`() {
-        Mockito.doThrow(ValidationException::class.java).`when`(service).addQuestion(Matchers.anyString(), Matchers.any())
-        val resultActions = mockMvc.perform(post("/questions/3/")
-                .content("{ \"questionText\": \"Fourth question\"}")
-                .contentType("application/vnd.survey-1.0+json")
-                .header("Accept", "application/vnd.survey-1.0+json"))
-        resultActions.andExpect(status().isBadRequest)
-    }
-
-    @Test
-    fun `returns HTTP 406 when calling add question with wrong header`() {
-        val resultActions = mockMvc.perform(post("/questions/3/")
-                .content("{ \"questionText\": \"Fourth question\"}")
-                .contentType("application/vnd.survey-1.0+json")
-                .header("Accept", "application/vnd.survey-1111.0+json"))
-        resultActions.andExpect(status().isNotAcceptable)
-    }
+//    @Before
+//    fun setup() {
+//        Mockito.`when`(service.addQuestion(Matchers.eq("1"), Matchers.any<QuestionText>())).thenReturn(Question(2))
+//    }
+//
+//    @Test
+//    fun `create question returns HTTP CREATED with location header`() {
+//        val resultActions = mockMvc.perform(post("/questions/1/")
+//                .content("{ \"questionText\": \"Fourth question\"}")
+//                .contentType("application/vnd.survey-1.0+json")
+//                .header("Accept", "application/vnd.survey-1.0+json"))
+//        resultActions.andExpect(status().isCreated)
+//        resultActions.andExpect(header().string("location", "http://localhost/questions/1/2"))
+//    }
+//
+//    @Test
+//    fun `returns HTTP bad request on wrong input`() {
+//        Mockito.doThrow(ValidationException::class.java).`when`(service).addQuestion(Matchers.anyString(), Matchers.any())
+//        val resultActions = mockMvc.perform(post("/questions/3/")
+//                .content("{ \"questionText\": \"Fourth question\"}")
+//                .contentType("application/vnd.survey-1.0+json")
+//                .header("Accept", "application/vnd.survey-1.0+json"))
+//        resultActions.andExpect(status().isBadRequest)
+//    }
+//
+//    @Test
+//    fun `returns HTTP 406 when calling add question with wrong header`() {
+//        val resultActions = mockMvc.perform(post("/questions/3/")
+//                .content("{ \"questionText\": \"Fourth question\"}")
+//                .contentType("application/vnd.survey-1.0+json")
+//                .header("Accept", "application/vnd.survey-1111.0+json"))
+//        resultActions.andExpect(status().isNotAcceptable)
+//    }
 }
