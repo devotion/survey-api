@@ -32,19 +32,19 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     private val questionDtoListType = object : TypeToken<List<QuestionIdAndText>>() {}.type
     private val answersDtoListType = object : TypeToken<List<AnswerIdAndText>>() {}.type
 
+    /**
+     * Write functions
+     */
     override fun addQuestion(@NotEmpty surveyId: String, @Valid question: QuestionText) {
-        kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.CREATE, surveyId, null, question),
-                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
+        kafkaTemplate.send(createGenericMessage(ModifyQuestionEvent(Action.CREATE, surveyId, null, question), kafkaConfig.questionCapturedTopic))
     }
 
-    override fun updateQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, @Valid question: QuestionText) {
-        kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.UPDATE, surveyId, questionId, question),
-                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
+    override fun updateQuestion(@NotEmpty surveyId: String, @NotNull questionId: String, @Valid question: QuestionText) {
+        kafkaTemplate.send(createGenericMessage(ModifyQuestionEvent(Action.UPDATE, surveyId, questionId, question), kafkaConfig.questionCapturedTopic))
     }
 
-    override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int) {
-        kafkaTemplate.send(GenericMessage(ModifyQuestionEvent(Action.DELETE, surveyId, questionId),
-                Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.questionCapturedTopic)))
+    override fun deleteQuestion(@NotEmpty surveyId: String, @NotNull questionId: String) {
+        kafkaTemplate.send(createGenericMessage(ModifyQuestionEvent(Action.DELETE, surveyId, questionId), kafkaConfig.questionCapturedTopic))
     }
 
     @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory", errorHandler = "validationErrorHandler")
@@ -52,56 +52,48 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         val survey = getValidSurvey(surveyRepository.findById(event.surveyId))
         validateModifyEvent(event, survey)
         val newQuestion = modelMapper.map(event.question, Question::class.java)
+        if (event.questionId != null)
+            newQuestion.id = event.questionId
         when (event.action) {
             Action.CREATE -> {
-                newQuestion.id = survey.questions.size
                 survey.questions.add(newQuestion)
             }
             Action.UPDATE -> {
-                newQuestion.id = event.questionId
-                survey.questions[event.questionId!!] = newQuestion
+                survey.questions.set(survey.questions.indexOfFirst { it.id == newQuestion.id }, newQuestion)
             }
             Action.DELETE -> {
-                survey.questions.removeAt(event.questionId!!);
+                survey.questions.removeAt(survey.questions.indexOfFirst { it.id == newQuestion.id });
             }
         }
         surveyRepository.save(survey)
         kafkaTemplate.send(GenericMessage(survey, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.surveyStoredTopic)))
     }
 
-    private fun validateModifyEvent(event: ModifyQuestionEvent, survey: Survey) {
-        when (event.action) {
-            Action.CREATE -> {
-                if (event.question.questionText.isNullOrBlank())
-                    throw ValidationException("Question text can not be empty.", "Invalid event [$event].")
-            }
-            Action.UPDATE -> {
-                val exception = ValidationException()
-                if (event.questionId == null || event.questionId !in (0 until survey.questions.size - 1)) {
-                    exception.messages.push("Question id is not valid.")
-                }
-                if(event.question.questionText.isNullOrBlank()){
-                    exception.messages.push("Question text can't be null or empty.")
-                }
-                if(exception.messages.isNotEmpty()){
-                    exception.messages.push("Invalid event [$event]")
-                    throw exception
-                }
-            }
-            Action.DELETE -> {
-                if (event.questionId == null || event.questionId !in (0 until survey.questions.size - 1)) {
-                    throw ValidationException("Question id is not valid.","Invalid event [$event].")
-                }
-            }
-        }
+    override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: String, @Valid answer: AnswerText): Answer {
+        validate(surveyRepository.findById(surveyId), questionId)
+        val newAnswer = modelMapper.map(answer, Answer::class.java)
+        newAnswer.surveyId = surveyId
+//        newAnswer.questionId = questionId
+        return answerRepository.insert(newAnswer)
     }
 
+    override fun updateAnswer(@NotEmpty answerId: String, @Valid answer: AnswerText) {
+        val existingOne = answerRepository.findById(answerId).get()
+        existingOne.answerText = answer.answerText
+        answerRepository.save(answerRepository.findById(answerId).get().apply { answerText = answer.answerText })
+    }
 
-    override fun getQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int, fetchAnswers: Boolean): QuestionAll {
+    override fun deleteAnswer(@NotEmpty answerId: String) = answerRepository.deleteById(answerId)
+
+
+    /**
+     * Read functions
+     */
+    override fun getQuestion(@NotEmpty surveyId: String, @NotNull questionId: String, fetchAnswers: Boolean): QuestionAll {
         log.debug("Invoke get question surveyId={}, questionId={}", surveyId, questionId)
         val survey = validate(surveyRepository.findById(surveyId), questionId)
         val questions = survey.questions
-        val question = questions[questionId]
+        val question = questions.first { it.id == questionId }
         val questionDto = modelMapper.map(question, QuestionAll::class.java)
         if (fetchAnswers) {
             val answers = answerRepository.findBySurveyIdAndQuestionId(surveyId, questionId)
@@ -118,28 +110,12 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         return modelMapper.map(questions, questionDtoListType)
     }
 
-    override fun getAllAnswers(@NotEmpty surveyId: String, @NotNull questionId: Int): List<AnswerIdAndText> {
+    override fun getAllAnswers(@NotEmpty surveyId: String, @NotNull questionId: String): List<AnswerIdAndText> {
         validate(surveyRepository.findById(surveyId), questionId)
         val answers = answerRepository.findBySurveyIdAndQuestionId(surveyId, questionId)
         return modelMapper.map(answers, answersDtoListType)
     }
 
-    override fun updateAnswer(@NotEmpty answerId: String, @Valid answer: AnswerText) {
-        val existingOne = answerRepository.findById(answerId).get()
-        existingOne.answerText = answer.answerText
-        answerRepository.save(answerRepository.findById(answerId).get().apply { answerText = answer.answerText })
-
-    }
-
-    override fun deleteAnswer(@NotEmpty answerId: String) = answerRepository.deleteById(answerId)
-
-    override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: Int, @Valid answer: AnswerText): Answer {
-        validate(surveyRepository.findById(surveyId), questionId)
-        val newAnswer = modelMapper.map(answer, Answer::class.java)
-        newAnswer.surveyId = surveyId
-        newAnswer.questionId = questionId
-        return answerRepository.insert(newAnswer)
-    }
 
     // todo: implement better and more flexible/reusable validation by using spring custom validators
     private fun getValidSurvey(input: Optional<Survey>): Survey {
@@ -153,12 +129,43 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         return result
     }
 
-    private fun validate(input: Optional<Survey>, questionId: Int): Survey {
+    private fun validate(input: Optional<Survey>, questionId: String): Survey {
         val survey = getValidSurvey(input)
         val questions = survey.questions
-        if (questions.size < questionId) {
+        if (survey.questions.filter { it.id == questionId }.size != 1) {
             throw ValidationException("Survey [$survey] has no question with id [$questionId]")
         }
         return survey
     }
+
+    private fun validateModifyEvent(event: ModifyQuestionEvent, survey: Survey) {
+        when (event.action) {
+            Action.CREATE -> {
+                if (event.question.questionText.isNullOrBlank())
+                    throw ValidationException("Question text can not be empty.", "Invalid event [$event].")
+            }
+            Action.UPDATE -> {
+                val exception = ValidationException()
+                if (event.questionId == null || survey.questions.filter { it.id == event.questionId }.size != 1) {
+                    exception.messages.push("Question id is not valid.")
+                }
+                if (event.question.questionText.isNullOrBlank()) {
+                    exception.messages.push("Question text can't be null or empty.")
+                }
+                if (exception.messages.isNotEmpty()) {
+                    exception.messages.push("Invalid event [$event]")
+                    throw exception
+                }
+            }
+            Action.DELETE -> {
+                if (event.questionId == null || survey.questions.filter { it.id == event.questionId }.size != 1) {
+                    throw ValidationException("Question id is not valid.", "Invalid event [$event].")
+                }
+            }
+        }
+    }
+
+    private fun createGenericMessage(event: Any, topic: String) =
+            GenericMessage(event, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, topic))
+
 }
