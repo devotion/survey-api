@@ -65,7 +65,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
             }
         }
         surveyRepository.save(survey)
-        kafkaTemplate.send(GenericMessage(survey, mapOf<String, Any>(KafkaHeaders.TOPIC to kafkaConfig.surveyStoredTopic)))
+        kafkaTemplate.send(createGenericMessage(survey, kafkaConfig.surveyStoredTopic))
     }
 
     override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: String, @Valid answer: AnswerText): Answer {
