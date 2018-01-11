@@ -49,7 +49,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
 
     @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory", errorHandler = "validationErrorHandler")
     fun onModifyQuestionEvent(event: ModifyQuestionEvent) {
-        val survey = getValidSurvey(surveyRepository.findById(event.surveyId))
+        val survey = getValidSurvey(event.surveyId)
         validateModifyEvent(event, survey)
         val newQuestion = modelMapper.map(event.question, Question::class.java)
         if (event.questionId != null)
@@ -70,10 +70,9 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: String, @Valid answer: AnswerText): Answer {
-        validate(surveyRepository.findById(surveyId), questionId)
+        validate(surveyId, questionId)
         val newAnswer = modelMapper.map(answer, Answer::class.java)
         newAnswer.surveyId = surveyId
-//        newAnswer.questionId = questionId
         return answerRepository.insert(newAnswer)
     }
 
@@ -91,7 +90,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
      */
     override fun getQuestion(@NotEmpty surveyId: String, @NotNull questionId: String, fetchAnswers: Boolean): QuestionAll {
         log.debug("Invoke get question surveyId={}, questionId={}", surveyId, questionId)
-        val survey = validate(surveyRepository.findById(surveyId), questionId)
+        val survey = validate(surveyId, questionId)
         val questions = survey.questions
         val question = questions.first { it.id == questionId }
         val questionDto = modelMapper.map(question, QuestionAll::class.java)
@@ -105,20 +104,21 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     override fun getAllQuestions(@NotEmpty surveyId: String): List<QuestionIdAndText> {
-        val survey = getValidSurvey(surveyRepository.findById(surveyId))
+        val survey = getValidSurvey(surveyId)
         val questions = survey.questions
         return modelMapper.map(questions, questionDtoListType)
     }
 
     override fun getAllAnswers(@NotEmpty surveyId: String, @NotNull questionId: String): List<AnswerIdAndText> {
-        validate(surveyRepository.findById(surveyId), questionId)
+        validate(surveyId, questionId)
         val answers = answerRepository.findBySurveyIdAndQuestionId(surveyId, questionId)
         return modelMapper.map(answers, answersDtoListType)
     }
 
 
     // todo: implement better and more flexible/reusable validation by using spring custom validators
-    private fun getValidSurvey(input: Optional<Survey>): Survey {
+    private fun getValidSurvey(surveyId: String): Survey {
+        var input = surveyRepository.findById(surveyId)
         if (!input.isPresent) {
             throw ValidationException("Survey [$input] could not be found")
         }
@@ -129,8 +129,8 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         return result
     }
 
-    private fun validate(input: Optional<Survey>, questionId: String): Survey {
-        val survey = getValidSurvey(input)
+    private fun validate(surveyId: String, questionId: String): Survey {
+        val survey = getValidSurvey(surveyId)
         val questions = survey.questions
         if (survey.questions.filter { it.id == questionId }.size != 1) {
             throw ValidationException("Survey [$survey] has no question with id [$questionId]")
