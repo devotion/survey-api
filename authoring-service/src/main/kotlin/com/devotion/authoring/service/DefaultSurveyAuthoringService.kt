@@ -20,7 +20,6 @@ import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
-
 @Service
 class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: SurveyRepository,
                                     @Autowired private val answerRepository: AnswerRepository,
@@ -66,7 +65,7 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
             }
         }
         surveyRepository.save(survey)
-        kafkaTemplate.send(GenericMessage(survey, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, kafkaConfig.surveyStoredTopic)))
+        kafkaTemplate.send(GenericMessage(survey, mapOf<String, Any>(KafkaHeaders.TOPIC to kafkaConfig.surveyStoredTopic)))
     }
 
     override fun addAnswer(@NotEmpty surveyId: String, @NotNull questionId: String, @Valid answer: AnswerText): Answer {
@@ -83,7 +82,6 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     override fun deleteAnswer(@NotEmpty answerId: String) = answerRepository.deleteById(answerId)
-
 
     /**
      * Read functions
@@ -114,7 +112,6 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
         val answers = answerRepository.findBySurveyIdAndQuestionId(surveyId, questionId)
         return modelMapper.map(answers, answersDtoListType)
     }
-
 
     // todo: implement better and more flexible/reusable validation by using spring custom validators
     private fun getValidSurvey(surveyId: String): Survey {
@@ -166,6 +163,5 @@ class DefaultSurveyAuthoringService(@Autowired private val surveyRepository: Sur
     }
 
     private fun createGenericMessage(event: Any, topic: String) =
-            GenericMessage(event, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, topic))
-
+            GenericMessage(event, mapOf<String, Any>(KafkaHeaders.TOPIC to topic))
 }
