@@ -16,7 +16,6 @@ import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.support.GenericMessage
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
@@ -43,7 +42,7 @@ class DefaultSurveyCaptureService(@Autowired private val kafkaConfig: KafkaConfi
     }
 
     private fun sendTo(topic: String, message: Any) {
-        kafkaTemplate.send(GenericMessage(message, Collections.singletonMap<String, Any>(KafkaHeaders.TOPIC, topic)))
+        kafkaTemplate.send(GenericMessage(message, mapOf<String, Any>(KafkaHeaders.TOPIC to topic)))
     }
 
     private fun validate(newResult: SurveyResult) {
