@@ -49,15 +49,9 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
         if (event.questionId != null)
             newQuestion.id = event.questionId
         when (event.action) {
-            Action.CREATE -> {
-                survey.questions.add(newQuestion)
-            }
-            Action.UPDATE -> {
-                survey.questions[survey.questions.indexOfFirst { it.id == newQuestion.id }] = newQuestion
-            }
-            Action.DELETE -> {
-                survey.questions.removeAt(survey.questions.indexOfFirst { it.id == newQuestion.id })
-            }
+            Action.CREATE -> survey.questions.add(newQuestion)
+            Action.UPDATE -> survey.questions[survey.questions.indexOfFirst { it.id == newQuestion.id }] = newQuestion
+            Action.DELETE -> survey.questions.removeAt(survey.questions.indexOfFirst { it.id == newQuestion.id })
         }
         surveyRepository.save(survey)
         kafkaTemplate.sendGenericMessage(survey, kafkaConfig.surveyStoredTopic)
