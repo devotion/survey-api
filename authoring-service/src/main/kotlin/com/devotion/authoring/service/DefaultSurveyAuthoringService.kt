@@ -96,11 +96,11 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
     private fun getValidSurvey(surveyId: String): Survey {
         val input = surveyRepository.findById(surveyId)
         if (!input.isPresent) {
-            throw ValidationException("Survey [$input] could not be found")
+            throw ValidationException("Survey with id [$surveyId] could not be found")
         }
         val result = input.get()
         if (result.published!!) {
-            throw ValidationException("Survey [$input] is already published")
+            throw ValidationException("Survey [$result] is already published")
         }
         return result
     }
