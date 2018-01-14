@@ -9,7 +9,6 @@ import com.devotion.capture.model.SurveyResult
 import org.modelmapper.ModelMapper
 import org.modelmapper.TypeToken
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.KafkaHeaders
@@ -20,11 +19,11 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
 @Service
-class DefaultSurveyCaptureService(@Autowired private val kafkaConfig: KafkaConfig,
-                                  @Autowired private val modelMapper: ModelMapper,
-                                  @Autowired private val resultRepository: SurveyResultRepository,
-                                  @Autowired private val answerRepository: QuestionAnswerRepository,
-                                  @Autowired private val kafkaTemplate: KafkaTemplate<String, String>) : SurveyCaptureService {
+class DefaultSurveyCaptureService(private val kafkaConfig: KafkaConfig,
+                                  private val modelMapper: ModelMapper,
+                                  private val resultRepository: SurveyResultRepository,
+                                  private val answerRepository: QuestionAnswerRepository,
+                                  private val kafkaTemplate: KafkaTemplate<String, String>) : SurveyCaptureService {
 
     private val log = LoggerFactory.getLogger(DefaultSurveyCaptureService::class.java)
     private val questionAnswerModelType = object : TypeToken<List<QuestionAnswer>>() {}.type
@@ -49,7 +48,7 @@ class DefaultSurveyCaptureService(@Autowired private val kafkaConfig: KafkaConfi
     }
 
     override fun getAnswersOnQuestion(@NotEmpty surveyId: String, @NotNull questionId: Int?): List<QuestionAnswer> {
-        log.debug("Invoke getAnswersOnQuestion statistic surveyid={}, questionid={}", surveyId, questionId)
+        log.debug("Invoke getAnswersOnQuestion statistic surveyId={}, questionId={}", surveyId, questionId)
         return answerRepository.findBySurveyIdAndQuestionId(surveyId, questionId)
     }
 }
