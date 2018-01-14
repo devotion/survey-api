@@ -3,7 +3,7 @@ package com.devotion.authoring.dto
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
-class QuestionText(@NotEmpty var questionText: String? = null)
+class QuestionText(@NotEmpty var questionText: String)
 
 class AnswerText(@NotEmpty var answerText: String)
 

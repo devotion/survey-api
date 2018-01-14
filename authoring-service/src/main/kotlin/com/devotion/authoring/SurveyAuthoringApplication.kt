@@ -144,6 +144,17 @@ class ValidationException : RuntimeException {
         messages.push(message)
     }
 
+    override fun getLocalizedMessage(): String {
+        var result : String = "";
+        for (msg in messages) {
+            result.plus(msg).plus(";\n")
+        }
+        if(super.getLocalizedMessage()!=null)
+            result.plus(super.getLocalizedMessage())
+        return result
+
+    }
+
     constructor(vararg msgs: String) {
         for (msg in msgs)
             messages.push(msg)

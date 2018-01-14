@@ -100,7 +100,7 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
         }
         val result = input.get()
         if (result.published!!) {
-            throw ValidationException("Survey [$result] is already published")
+            throw ValidationException("Survey [$surveyId] is already published")
         }
         return result
     }
@@ -128,13 +128,12 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
                     exception.messages.push("Question text can't be null or empty.")
                 }
                 if (exception.messages.isNotEmpty()) {
-                    exception.messages.push("Invalid event [$event]")
                     throw exception
                 }
             }
             Action.DELETE -> {
                 if (event.questionId == null || survey.questions.filter { it.id == event.questionId }.size != 1) {
-                    throw ValidationException("Question id is not valid.", "Invalid event [$event].")
+                    throw ValidationException("Question id is not valid.")
                 }
             }
         }
