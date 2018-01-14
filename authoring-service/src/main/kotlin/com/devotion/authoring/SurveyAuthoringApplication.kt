@@ -1,10 +1,12 @@
 package com.devotion.authoring
 
+import com.devotion.authoring.dto.ProcessingEventError
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.modelmapper.ModelMapper
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -16,7 +18,9 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.KafkaListenerErrorHandler
+import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.kafka.support.converter.StringJsonMessageConverter
+import org.springframework.messaging.support.GenericMessage
 import org.springframework.stereotype.Component
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.RequestHandlerSelectors
@@ -31,11 +35,16 @@ import java.util.*
 @EnableSwagger2
 class SurveyAuthoringApplication {
 
+    private val log = LoggerFactory.getLogger(SurveyAuthoringApplication::class.java)
+
     @Autowired
     private lateinit var apiConfig: ApiConfig
 
     @Autowired
     private lateinit var kafkaConfig: KafkaConfig
+
+    @Autowired
+    private lateinit var kafkaTemplate: KafkaTemplate<String, String>
 
     @Bean
     fun modelMapper() = ModelMapper()
@@ -89,7 +98,15 @@ class SurveyAuthoringApplication {
 
     @Bean
     fun validationErrorHandler(): KafkaListenerErrorHandler {
-        return KafkaListenerErrorHandler { m, e -> print("this is realy bad ${e} | ${m}") }
+        return KafkaListenerErrorHandler { message, error ->
+            log.error("Error in processing [${message.headers[KafkaHeaders.MESSAGE_KEY]}] event", error)
+            kafkaTemplate.send(
+                    GenericMessage(ProcessingEventError(
+                                        error.cause!!.message,
+                                        message.payload,
+                                        message.headers.filter { it.key != KafkaHeaders.CONSUMER }.toMap()),
+                    mapOf(KafkaHeaders.TOPIC to kafkaConfig.errorTopic)))
+        }
     }
 
     private fun apiInfo() = ApiInfoBuilder()
@@ -126,11 +143,12 @@ class KafkaConfig {
     lateinit var questionCapturedTopic: String
     lateinit var questionStoredTopic: String
     lateinit var surveyStoredTopic: String
+    lateinit var errorTopic: String
 }
 
 annotation class NoArgConstructor
 
-class ValidationException : RuntimeException {
+class ValidationException : Exception {
     var messages: Stack<String> = Stack()
 
     companion object {
@@ -145,11 +163,11 @@ class ValidationException : RuntimeException {
     }
 
     override fun getLocalizedMessage(): String {
-        var result : String = "";
+        var result: String = "";
         for (msg in messages) {
             result.plus(msg).plus(";\n")
         }
-        if(super.getLocalizedMessage()!=null)
+        if (super.getLocalizedMessage() != null)
             result.plus(super.getLocalizedMessage())
         return result
 

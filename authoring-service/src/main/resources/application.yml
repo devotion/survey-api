@@ -12,11 +12,13 @@ spring:
 kafka:
   bootstrapAddress: kafka:9092
   consumerGroupName: authoringGroup
+  errorTopic: processing-errors
   answerCapturedTopic: answer-captured
   answerStoredTopic: answer-stored
   questionCapturedTopic: question-captured
   questionStoredTopic: question-stored
   surveyStoredTopic: survey-stored
+
 
 server:
   port: 7979

@@ -41,6 +41,7 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
         kafkaTemplate.sendGenericMessage(ModifyQuestionEvent(Action.DELETE, surveyId, questionId), kafkaConfig.questionCapturedTopic)
     }
 
+    // todo: make sure to not retry on validationexception!!!
     @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory", errorHandler = "validationErrorHandler")
     fun onModifyQuestionEvent(event: ModifyQuestionEvent) {
         val survey = getValidSurvey(event.surveyId)
@@ -117,7 +118,7 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
         when (event.action) {
             Action.CREATE -> {
                 if (event.question.questionText.isNullOrBlank())
-                    throw ValidationException("Question text can not be empty.", "Invalid event [$event].")
+                    throw ValidationException("Question text can not be empty.")
             }
             Action.UPDATE -> {
                 val exception = ValidationException()

@@ -2,24 +2,22 @@ package com.devotion.authoring.service
 
 
 import com.devotion.authoring.KafkaConfig
-
 import com.devotion.authoring.ValidationException
 import com.devotion.authoring.dto.Action
 import com.devotion.authoring.dto.ModifyQuestionEvent
 import com.devotion.authoring.dto.QuestionText
-import com.devotion.authoring.model.Answer
 import com.devotion.authoring.model.Question
 import com.devotion.authoring.model.Survey
-import kafka.message.Message
-import org.assertj.core.api.Assertions.*
-import org.junit.*
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
 import org.modelmapper.ModelMapper
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.test.rule.KafkaEmbedded
-import org.springframework.messaging.support.GenericMessage
 import java.util.*
 
 
@@ -82,13 +80,24 @@ class DefaultSurveyAuthoringServiceTest {
     }
 
     @Test
-    fun `fail processing add question event when for published survey`() {
+    fun `fail processing add question event for published survey`() {
         try {
             service.onModifyQuestionEvent(ModifyQuestionEvent(Action.CREATE, SURVEY_ID_0_PUBLISHED, null, questionText))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
             assertThat(ex.messages).contains("Survey [$SURVEY_ID_0_PUBLISHED] is already published")
+        }
+    }
+
+    @Test
+    fun `fail processing add question event for question without text`() {
+        try {
+            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.CREATE, SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS, null, QuestionText()))
+            fail("Error not thrown")
+        } catch (ex: ValidationException) {
+            assertThat(ex.messages.size).isEqualTo(1)
+            assertThat(ex.messages).contains("Question text can not be empty.")
         }
     }
 

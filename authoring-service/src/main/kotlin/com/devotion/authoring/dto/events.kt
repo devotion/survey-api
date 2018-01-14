@@ -8,3 +8,6 @@ enum class Action {
 
 @NoArgConstructor
 class ModifyQuestionEvent(val action: Action, val surveyId: String, val questionId: String?, val question: QuestionText = QuestionText(""))
+
+@NoArgConstructor
+class ProcessingEventError(val error: String?, val originalEvent: Any, val __messageHeaders: Map<String, Any>)
