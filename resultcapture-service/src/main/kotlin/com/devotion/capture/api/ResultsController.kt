@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(value = ["/results/{surveyId}"], headers = ["Accept=application/vnd.survey-1.0+json"])
 @Api(description = "Provides operations to get response data")
-class ResultsController {
-
-    @Autowired
-    private lateinit var captureService: SurveyCaptureService
+class ResultsController(private val captureService: SurveyCaptureService) {
 
     @GetMapping("/{questionId}")
     @ApiOperation("Get all responses on single question.")
