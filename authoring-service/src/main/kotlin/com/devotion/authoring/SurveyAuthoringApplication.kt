@@ -29,7 +29,7 @@ import java.util.*
 
 @SpringBootApplication
 @EnableSwagger2
-open class SurveyAuthoringApplication {
+class SurveyAuthoringApplication {
 
     @Autowired
     private lateinit var apiConfig: ApiConfig

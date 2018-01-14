@@ -4,7 +4,6 @@ import com.devotion.authoring.dto.AnswerIdAndText
 import com.devotion.authoring.dto.AnswerText
 import com.devotion.authoring.service.SurveyAuthoringService
 import io.swagger.annotations.ApiOperation
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
@@ -14,9 +13,7 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping(value = ["/answers"], headers = ["Accept=application/vnd.survey-1.0+json"])
-class AnswerController {
-    @Autowired
-    private lateinit var service: SurveyAuthoringService
+class AnswerController(private val service: SurveyAuthoringService) {
 
     @PostMapping("/{surveyId}/{questionId}")
     @ApiOperation(value = "Add new answer to the question", code = HttpServletResponse.SC_CREATED)
