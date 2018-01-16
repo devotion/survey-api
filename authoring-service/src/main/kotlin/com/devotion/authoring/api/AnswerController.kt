@@ -12,31 +12,31 @@ import javax.servlet.http.HttpServletResponse
 import javax.validation.Valid
 
 @RestController
-@RequestMapping(value = ["/answers"], headers = ["Accept=application/vnd.survey-1.0+json"])
+@RequestMapping(value = ["/answers/{surveyId}"], headers = ["Accept=application/vnd.survey-1.0+json"])
 class AnswerController(private val service: SurveyAuthoringService) {
 
-    @PostMapping("/{surveyId}/{questionId}")
+    @PostMapping("/{questionId}")
     @ApiOperation(value = "Add new answer to the question", code = HttpServletResponse.SC_CREATED)
     fun addAnswer(@PathVariable surveyId: String, @PathVariable questionId: String, @Valid @RequestBody answer: AnswerText): ResponseEntity<*> {
-        val saved = service.addAnswer(surveyId, questionId, answer)
-        return ResponseEntity.created(getUri(saved.id)).build<Any>()
+        service.addAnswer(surveyId, questionId, answer)
+        return ResponseEntity.accepted().build<Any>()
     }
 
     @PutMapping("/{answerId}")
     @ApiOperation(value = "Update existing answer", code = HttpServletResponse.SC_NO_CONTENT)
-    fun updateAnswer(@PathVariable answerId: String, @Valid @RequestBody answer: AnswerText): ResponseEntity<*> {
-        service.updateAnswer(answerId, answer)
+    fun updateAnswer(@PathVariable surveyId: String, @PathVariable answerId: String, @Valid @RequestBody answer: AnswerText): ResponseEntity<*> {
+        service.updateAnswer(surveyId, answerId, answer)
         return ResponseEntity.noContent().build<Any>()
     }
 
     @DeleteMapping("/{answerId}")
     @ApiOperation("Delete answer")
-    fun deleteAnswer(@PathVariable answerId: String): ResponseEntity<*> {
-        service.deleteAnswer(answerId)
+    fun deleteAnswer(@PathVariable surveyId: String, @PathVariable answerId: String): ResponseEntity<*> {
+        service.deleteAnswer(surveyId, answerId)
         return ResponseEntity.ok().build<Any>()
     }
 
-    @GetMapping("/{surveyId}/{questionId}")
+    @GetMapping("/{questionId}")
     @ApiOperation("Get all answers for question")
     fun getAllAnswers(@PathVariable surveyId: String, @PathVariable questionId: String): List<AnswerIdAndText> {
         return service.getAllAnswers(surveyId, questionId)

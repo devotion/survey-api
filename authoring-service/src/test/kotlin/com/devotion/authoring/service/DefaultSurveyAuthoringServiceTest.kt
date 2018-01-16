@@ -3,9 +3,7 @@ package com.devotion.authoring.service
 
 import com.devotion.authoring.KafkaConfig
 import com.devotion.authoring.ValidationException
-import com.devotion.authoring.dto.Action
-import com.devotion.authoring.dto.ModifyQuestionEvent
-import com.devotion.authoring.dto.QuestionText
+import com.devotion.authoring.dto.*
 import com.devotion.authoring.model.Question
 import com.devotion.authoring.model.Survey
 import org.assertj.core.api.Assertions.assertThat
@@ -39,9 +37,9 @@ class DefaultSurveyAuthoringServiceTest {
     private lateinit var service: DefaultSurveyAuthoringService
 
     var survey_0 = Optional.of(Survey(published = true))
-    var survey_1 = Optional.of(Survey(published = false, questions = DefaultSurveyAuthoringServiceTest.getQuestions(4)))
+    var survey_1 = Optional.of(Survey(published = false).apply { questions.addAll(DefaultSurveyAuthoringServiceTest.getQuestions(4))})
     var survey_2 = Optional.empty<Survey>()
-    var survey_3 = Optional.of(Survey(published = false, questions = DefaultSurveyAuthoringServiceTest.getQuestions(1)))
+    var survey_3 = Optional.of(Survey(published = false).apply { questions.addAll(DefaultSurveyAuthoringServiceTest.getQuestions(1))})
     val survey_4 = Optional.of(Survey(published = false))
 
     @Before
@@ -64,14 +62,14 @@ class DefaultSurveyAuthoringServiceTest {
 
     @Test
     fun `should process add question event`() {
-        service.onModifyQuestionEvent(ModifyQuestionEvent(Action.CREATE, SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, null, questionText));
+        service.onModifyQuestionEvent(AddQuestionEvent(SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, questionText));
         assertThat(survey_3.get().questions.size).isEqualTo(2)
     }
 
     @Test
     fun `fail processing add question event for non-existing survey`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.CREATE, SURVEY_ID_2_NON_EXISTING, null, questionText))
+            service.onModifyQuestionEvent(AddQuestionEvent(SURVEY_ID_2_NON_EXISTING, questionText))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -82,7 +80,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail processing add question event for published survey`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.CREATE, SURVEY_ID_0_PUBLISHED, null, questionText))
+            service.onModifyQuestionEvent(AddQuestionEvent( SURVEY_ID_0_PUBLISHED,  questionText))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -93,7 +91,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail processing add question event for question without text`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.CREATE, SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS, null, QuestionText()))
+            service.onModifyQuestionEvent(AddQuestionEvent( SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS, QuestionText()))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -111,7 +109,7 @@ class DefaultSurveyAuthoringServiceTest {
         val question = survey_3.get().questions[0]
         val originalQuestionText = question.questionText
         val originalQuestionId = question.id
-        service.onModifyQuestionEvent(ModifyQuestionEvent(Action.UPDATE, SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, originalQuestionId, questionText))
+        service.onModifyQuestionEvent(UpdateQuestionEvent( SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, originalQuestionId, questionText))
         assertThat(survey_3.get().questions[0].questionText).isNotEqualTo(originalQuestionText)
         assertThat(survey_3.get().questions[0].questionText).isEqualTo(questionText.questionText)
         assertThat(survey_3.get().questions[0].id).isEqualTo(originalQuestionId)
@@ -120,7 +118,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail process update question for non existing survey`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.UPDATE, SURVEY_ID_2_NON_EXISTING, "IT SHOULD FAIL BEFORE Checking THIS", questionText))
+            service.onModifyQuestionEvent(UpdateQuestionEvent( SURVEY_ID_2_NON_EXISTING, "IT SHOULD FAIL BEFORE Checking THIS", questionText))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -131,7 +129,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail process update question for published survey`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.UPDATE, SURVEY_ID_0_PUBLISHED, "IT SHOULD FAIL BEFORE Checking THIS", questionText))
+            service.onModifyQuestionEvent(UpdateQuestionEvent( SURVEY_ID_0_PUBLISHED, "IT SHOULD FAIL BEFORE Checking THIS", questionText))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -142,7 +140,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail process update question for non existing question id and empty question text`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.UPDATE, SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, "IT SHOULD FAIL on This", QuestionText("")))
+            service.onModifyQuestionEvent(UpdateQuestionEvent( SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, "IT SHOULD FAIL on This", QuestionText("")))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(2)
@@ -159,14 +157,14 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `should process delete question event`() {
         val question = survey_1.get().questions[2];
-        service.onModifyQuestionEvent(ModifyQuestionEvent(Action.DELETE, SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS, question.id))
+        service.onModifyQuestionEvent(DeleteQuestionEvent( SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS, question.id))
         assertThat(survey_1.get().questions).doesNotContain(question)
     }
 
     @Test
     fun `fail process delete event for non existing question id`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.DELETE, SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, "IT SHOULD FAIL on This"))
+            service.onModifyQuestionEvent(DeleteQuestionEvent( SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION, "IT SHOULD FAIL on This"))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -177,7 +175,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail process delete event for non existing survey`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.DELETE, SURVEY_ID_2_NON_EXISTING, "IT SHOULD FAIL before"))
+            service.onModifyQuestionEvent(DeleteQuestionEvent( SURVEY_ID_2_NON_EXISTING, "IT SHOULD FAIL before"))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -188,7 +186,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Test
     fun `fail process delete event for published survey`() {
         try {
-            service.onModifyQuestionEvent(ModifyQuestionEvent(Action.DELETE, SURVEY_ID_0_PUBLISHED, "IT SHOULD FAIL before"))
+            service.onModifyQuestionEvent(DeleteQuestionEvent( SURVEY_ID_0_PUBLISHED, "IT SHOULD FAIL before"))
             fail("Error not thrown")
         } catch (ex: ValidationException) {
             assertThat(ex.messages.size).isEqualTo(1)
@@ -219,10 +217,8 @@ class DefaultSurveyAuthoringServiceTest {
         val SURVEY_ID_3_NON_PUBLISHED_WITH_1_QUESTION = "3"
         val SURVEY_ID_4_NON_PUBLISHED_WITH_NO_QUESTIONS = "4"
 
-        fun getQuestions(size: Int): MutableList<Question> {
-            val result = ArrayList<Question>(size)
-            (0 until size).mapTo(result) { Question(it.toString()) }
-            return result
+        fun getQuestions(size: Int): List<Question> {
+            return (0 until size).map { Question(it.toString()).apply { id = it.toString() } }
         }
     }
 }
