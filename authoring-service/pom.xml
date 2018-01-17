@@ -22,7 +22,7 @@
         <lombok.version>1.16.18</lombok.version>
         <springfox-swagger2.version>2.7.0</springfox-swagger2.version>
         <jackson-databind.version>2.9.3</jackson-databind.version>
-        <kotlin.version>1.2.10</kotlin.version>
+        <kotlin.version>1.2.20</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     </properties>
 
