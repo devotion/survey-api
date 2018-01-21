@@ -3,12 +3,16 @@ package com.devotion.authoring.dto
 import com.devotion.authoring.NoArgConstructor
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
-@NoArgConstructor
-@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
-abstract class QuestionEvent( val surveyId: String, open val question: QuestionText)
+interface Event {
+
+}
 
 @NoArgConstructor
-class AddQuestionEvent(surveyId: String, question: QuestionText) : QuestionEvent( surveyId, question)
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
+abstract class QuestionEvent ( val surveyId: String, open val question: QuestionText) : Event
+
+@NoArgConstructor
+class AddQuestionEvent(surveyId: String, question: QuestionText) : QuestionEvent( surveyId, question), Event
 
 @NoArgConstructor
 class UpdateQuestionEvent(surveyId: String, val questionId: String, override var question: QuestionText) : QuestionEvent( surveyId, question)
@@ -18,7 +22,7 @@ class DeleteQuestionEvent(surveyId: String, val questionId: String): QuestionEve
 
 @NoArgConstructor
 @JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
-abstract class AnswerEvent(val surveyId: String, val answer: AnswerText)
+abstract class AnswerEvent(val surveyId: String, val answer: AnswerText) : Event
 
 @NoArgConstructor
 class AddAnswerEvent(surveyId: String, val questionId: String, answerText: AnswerText) : AnswerEvent(surveyId, answerText)

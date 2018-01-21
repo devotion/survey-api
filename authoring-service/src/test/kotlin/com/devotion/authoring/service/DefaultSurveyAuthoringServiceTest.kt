@@ -3,7 +3,10 @@ package com.devotion.authoring.service
 
 import com.devotion.authoring.KafkaConfig
 import com.devotion.authoring.ValidationException
-import com.devotion.authoring.dto.*
+import com.devotion.authoring.dto.AddQuestionEvent
+import com.devotion.authoring.dto.DeleteQuestionEvent
+import com.devotion.authoring.dto.QuestionText
+import com.devotion.authoring.dto.UpdateQuestionEvent
 import com.devotion.authoring.model.Question
 import com.devotion.authoring.model.Survey
 import org.assertj.core.api.Assertions.assertThat
@@ -21,14 +24,18 @@ import java.util.*
 
 var questionText = QuestionText("This is first question")
 
+
 class DefaultSurveyAuthoringServiceTest {
 
     @Mock
     private lateinit var surveyRepository: SurveyRepository
+
     @Mock
     private lateinit var answerRepository: AnswerRepository
+
     @Mock
     private lateinit var kafkaTemplate: KafkaTemplate<String, String>
+
     @Mock
     private lateinit var kafkaConfig: KafkaConfig
 
@@ -45,7 +52,7 @@ class DefaultSurveyAuthoringServiceTest {
     @Before
     fun setup() {
         initMocks(this)
-        service = DefaultSurveyAuthoringService(surveyRepository, answerRepository, modelMapper, kafkaConfig, kafkaTemplate)
+        service = DefaultSurveyAuthoringService(surveyRepository, answerRepository, modelMapper, kafkaConfig, kafkaTemplate, emptyMap())
         `when`(surveyRepository.findById(SURVEY_ID_0_PUBLISHED)).thenReturn(survey_0)
         `when`(surveyRepository.findById(SURVEY_ID_1_NON_PUBLISHED_WITH_4_QUESTIONS)).thenReturn(survey_1)
         `when`(surveyRepository.findById(SURVEY_ID_2_NON_EXISTING)).thenReturn(survey_2)

@@ -9,6 +9,7 @@ import com.devotion.authoring.model.Survey
 import org.modelmapper.ModelMapper
 import org.modelmapper.TypeToken
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.KafkaHeaders
@@ -24,7 +25,8 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
                                     private val answerRepository: AnswerRepository,
                                     private val modelMapper: ModelMapper,
                                     private val kafkaConfig: KafkaConfig,
-                                    private val kafkaTemplate: KafkaTemplate<String, String>) : SurveyAuthoringService {
+                                    private val kafkaTemplate: KafkaTemplate<String, String>,
+                                    private val processors: Map<String, Proc<Event>>) : SurveyAuthoringService {
 
     private val log = LoggerFactory.getLogger(DefaultSurveyAuthoringService::class.java)
     private val questionDtoListType = object : TypeToken<List<QuestionIdAndText>>() {}.type
@@ -42,12 +44,12 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
         kafkaTemplate.sendGenericMessage(DeleteQuestionEvent(surveyId, questionId), kafkaConfig.questionCapturedTopic)
     }
 
-
     // todo: make sure to not retry on validationexception!!!
     @KafkaListener(topics = ["\${kafka.questionCapturedTopic}"], containerFactory = "jsonKafkaListenerContainerFactory", errorHandler = "validationErrorHandler")
     fun onModifyQuestionEvent(event: QuestionEvent) {
         val survey = getValidSurvey(event.surveyId)
         validateModifyEvent(event, survey)
+//        processors[event.javaClass.simpleName]!!.process(event)
         when (event) {
             is AddQuestionEvent ->
                 survey.questions.add(modelMapper.map(event.question, Question::class.java).apply { this.id = UUID.randomUUID().toString() })
@@ -80,7 +82,6 @@ class DefaultSurveyAuthoringService(private val surveyRepository: SurveyReposito
                     this.surveyId = event.surveyId
                     this.questionId = event.questionId
                 })
-
             is UpdateAnswerEvent ->
                 answerRepository.save(answerRepository.findById(event.answerId).get().apply { answerText = event.answer.answerText })
             is DeleteAnswerEvent ->
